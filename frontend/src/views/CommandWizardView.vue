@@ -9,7 +9,9 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { post } from '../api'
+import HelpPanel from '../components/HelpPanel.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
+import { commandHelp, type HelpTopic } from '../help/wizardHelp'
 import { useSchema } from '../stores/schema'
 
 const route = useRoute()
@@ -37,6 +39,13 @@ const verifStart = ref(false)
 const verifCompletion = ref(true)
 const error = ref('')
 const busy = ref(false)
+
+const helpVisible = ref(false)
+const helpTopic = ref<HelpTopic | null>(null)
+function help(key: string) {
+  helpTopic.value = commandHelp[key]
+  helpVisible.value = true
+}
 
 const serviceOptions = computed(() =>
   store.pusServices.flatMap((s) =>
@@ -135,23 +144,27 @@ async function submit() {
       <h2>1. The command</h2>
       <div class="grid-2">
         <div class="field-row">
-          <label v-tooltip.top="'Unique mnemonic, max 8 characters.'">Command name <span class="req">*</span></label>
+          <label v-tooltip.top="'Unique mnemonic, max 8 characters.'">
+            Command name <span class="req">*</span> <i class="pi pi-question-circle wq" @click="help('cname')" />
+          </label>
           <InputText v-model="cname" maxlength="8" placeholder="e.g. XYZMODE" fluid />
         </div>
         <div class="field-row">
-          <label>Description <span class="req">*</span></label>
+          <label>
+            Description <span class="req">*</span> <i class="pi pi-question-circle wq" @click="help('descr')" />
+          </label>
           <InputText v-model="descr" maxlength="24" placeholder="e.g. Set instrument mode" fluid />
         </div>
         <div class="field-row">
           <label v-tooltip.top="'Most unit commands are (8,1) Perform function — the first argument is then a function ID.'">
-            PUS service
+            PUS service <i class="pi pi-question-circle wq" @click="help('service')" />
           </label>
           <Select v-model="selectedService" :options="serviceOptions" option-label="label"
                   option-value="value" filter fluid @change="applyService" />
         </div>
         <div class="field-row">
           <label v-tooltip.top="'The service type and subtype written into the PUS header of the command packet. Pre-filled by the service selection — only edit for mission-custom services.'">
-            Type / subtype (editable)
+            Type / subtype (editable) <i class="pi pi-question-circle wq" @click="help('typestype')" />
           </label>
           <div style="display: flex; gap: 0.5rem">
             <InputNumber v-model="type" :min="0" :max="255" show-buttons style="width: 50%" />
@@ -160,7 +173,7 @@ async function submit() {
         </div>
         <div class="field-row">
           <label v-tooltip.top="'APID of the on-board application that executes this command — usually the same APID your unit uses for telemetry.'">
-            APID <span class="req">*</span>
+            APID <span class="req">*</span> <i class="pi pi-question-circle wq" @click="help('apid')" />
           </label>
           <InputNumber v-model="apid" :min="0" :max="2047" fluid />
         </div>
@@ -170,12 +183,14 @@ async function submit() {
                  v-tooltip.top="'Critical commands require a second operator confirmation before release.'">
             Critical / hazardous command
           </label>
+          <i class="pi pi-question-circle wq" @click="help('critical')" />
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h2>2. Arguments (application data, in order)</h2>
+      <h2>2. Arguments (application data, in order)
+        <i class="pi pi-question-circle wq" @click="help('args')" /></h2>
       <p class="muted small">
         For a (8,1) command the first element is typically a fixed Function ID. New
         parameter names are created in cpc automatically; bit offsets are computed
@@ -244,7 +259,8 @@ async function submit() {
     </div>
 
     <div class="card">
-      <h2>3. Verification</h2>
+      <h2>3. Verification
+        <i class="pi pi-question-circle wq" @click="help('verification')" /></h2>
       <p class="muted small">
         Which PUS service-1 reports the ground should wait for. This sets the command's
         acknowledgement flags (CCF_ACK) and links the matching verification stages.
@@ -278,6 +294,8 @@ async function submit() {
       <div class="spacer" />
       <Button label="Create command" icon="pi pi-check" :loading="busy" :disabled="!valid" @click="submit" />
     </div>
+
+    <HelpPanel v-model:visible="helpVisible" :topic="helpTopic" />
   </div>
 </template>
 

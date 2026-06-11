@@ -56,6 +56,15 @@ h3 { font-size: 1rem; margin: 0 0 0.5rem; }
 }
 .field-row .req { color: var(--p-red-500); }
 
+/* question-mark icon that opens the help drawer */
+.wq {
+  font-size: 0.8rem;
+  color: var(--p-primary-color);
+  cursor: pointer;
+  margin-left: 0.15rem;
+}
+.wq:hover { color: var(--p-primary-700); }
+
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.5rem; }
 @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
 

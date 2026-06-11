@@ -9,7 +9,9 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { post } from '../api'
+import HelpPanel from '../components/HelpPanel.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
+import { packetHelp, type HelpTopic } from '../help/wizardHelp'
 import { useSchema } from '../stores/schema'
 
 const route = useRoute()
@@ -35,6 +37,13 @@ const intervalMs = ref<number | null>(8000)
 const params = ref<ParamRow[]>([])
 const error = ref('')
 const busy = ref(false)
+
+const helpVisible = ref(false)
+const helpTopic = ref<HelpTopic | null>(null)
+function help(key: string) {
+  helpTopic.value = packetHelp[key]
+  helpVisible.value = true
+}
 
 const serviceOptions = computed(() =>
   store.pusServices.flatMap((s) =>
@@ -132,14 +141,14 @@ async function submit() {
       <div class="grid-2">
         <div class="field-row">
           <label v-tooltip.top="'PUS service / subtype of the packet. Housekeeping reports are (3,25).'">
-            PUS service
+            PUS service <i class="pi pi-question-circle wq" @click="help('service')" />
           </label>
           <Select v-model="selectedService" :options="serviceOptions" option-label="label"
                   option-value="value" filter fluid @change="applyService" />
         </div>
         <div class="field-row">
           <label v-tooltip.top="'The service type and subtype written into the PUS header of the packet. Pre-filled by the service selection on the left — only edit for mission-custom services.'">
-            Type / subtype (editable)
+            Type / subtype (editable) <i class="pi pi-question-circle wq" @click="help('typestype')" />
           </label>
           <div style="display: flex; gap: 0.5rem">
             <InputNumber v-model="type" :min="0" :max="255" show-buttons style="width: 50%" />
@@ -148,23 +157,25 @@ async function submit() {
         </div>
         <div class="field-row">
           <label v-tooltip.top="'The APID assigned to your unit by the system team (0-2047).'">
-            APID <span class="req">*</span>
+            APID <span class="req">*</span> <i class="pi pi-question-circle wq" @click="help('apid')" />
           </label>
           <InputNumber v-model="apid" :min="0" :max="2047" fluid />
         </div>
         <div class="field-row">
           <label v-tooltip.top="'Shown to operators wherever this packet appears.'">
-            Description <span class="req">*</span>
+            Description <span class="req">*</span> <i class="pi pi-question-circle wq" @click="help('descr')" />
           </label>
           <InputText v-model="descr" placeholder="e.g. XYZ standard HK report" fluid />
         </div>
         <div class="field-row">
-          <label v-tooltip.top="'Short mnemonic for displays (tpcf), max 12 characters.'">Packet mnemonic</label>
+          <label v-tooltip.top="'Short mnemonic for displays (tpcf), max 12 characters.'">
+            Packet mnemonic <i class="pi pi-question-circle wq" @click="help('mnemonic')" />
+          </label>
           <InputText v-model="packetName" maxlength="12" placeholder="e.g. XYZ_HK1" fluid />
         </div>
         <div class="field-row" v-if="isHk">
           <label v-tooltip.top="'The Structure ID distinguishing this HK report from others with the same APID and type. Carried as the first field of the packet body.'">
-            SID (PI1 value)
+            SID (PI1 value) <i class="pi pi-question-circle wq" @click="help('sid')" />
           </label>
           <InputNumber v-model="pi1Val" :min="0" fluid />
         </div>
@@ -176,7 +187,7 @@ async function submit() {
       <div class="grid-2">
         <div class="field-row">
           <label v-tooltip.top="'Bytes of PUS secondary header (incl. time stamp and spare) after the 6-byte CCSDS header. Mission-specific — ask your system team. Common values: 10-16.'">
-            Data field header size (bytes)
+            Data field header size (bytes) <i class="pi pi-question-circle wq" @click="help('dfh')" />
           </label>
           <InputNumber v-model="dfhSize" :min="0" :max="64" show-buttons fluid />
         </div>
@@ -187,6 +198,7 @@ async function submit() {
                    v-tooltip.top="'Whether the data field header carries the packet generation time stamp (PID_TIME). Standard PUS housekeeping packets do.'">
               Header contains time stamp
             </label>
+            <i class="pi pi-question-circle wq" @click="help('time')" />
           </div>
           <div style="display: flex; align-items: center; gap: 0.4rem">
             <Checkbox v-model="hasPec" binary input-id="hp" />
@@ -194,11 +206,12 @@ async function submit() {
                    v-tooltip.top="'Whether the last 2 bytes of the packet are a CRC checksum (Packet Error Control). Standard for PUS packets — only affects the computed total size (tpcf).'">
               Packet ends with CRC (PEC, 2 bytes)
             </label>
+            <i class="pi pi-question-circle wq" @click="help('pec')" />
           </div>
         </div>
         <div class="field-row">
           <label v-tooltip.top="'For periodic packets: the generation period. Used to flag stale parameters. Empty for event-driven packets.'">
-            Generation interval (ms)
+            Generation interval (ms) <i class="pi pi-question-circle wq" @click="help('interval')" />
           </label>
           <InputNumber v-model="intervalMs" :min="0" fluid />
         </div>
@@ -206,7 +219,8 @@ async function submit() {
     </div>
 
     <div class="card">
-      <h2>3. Parameters in the packet body (in order)</h2>
+      <h2>3. Parameters in the packet body (in order)
+        <i class="pi pi-question-circle wq" @click="help('params')" /></h2>
       <p class="muted small">
         List the fields of the packet body in their on-board order, starting right after the
         data field header. For a HK packet the first field is usually the 16-bit SID —
@@ -286,6 +300,8 @@ async function submit() {
               :disabled="apid == null || !descr.trim() || params.some(p => !p.name.trim())"
               @click="submit" />
     </div>
+
+    <HelpPanel v-model:visible="helpVisible" :topic="helpTopic" />
   </div>
 </template>
 
