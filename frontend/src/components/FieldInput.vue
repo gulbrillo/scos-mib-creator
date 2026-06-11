@@ -62,35 +62,38 @@ const fkOptions = computed(() => {
       />
       <span class="muted small mono">{{ column.name }}</span>
     </label>
-    <Select
-      v-if="enumOptions"
-      v-model="value"
-      :options="enumOptions"
-      option-label="label"
-      option-value="value"
-      size="small"
-      :placeholder="column.hint"
-      fluid
-    />
-    <Select
-      v-else-if="fkOptions"
-      v-model="value"
-      :options="fkOptions"
-      option-label="label"
-      option-value="value"
-      size="small"
-      filter
-      :placeholder="`Select from ${column.fk?.split('.')[0]}…`"
-      fluid
-    />
-    <InputText
-      v-else
-      v-model="value"
-      size="small"
-      :placeholder="column.hint"
-      :maxlength="column.length ?? undefined"
-      fluid
-    />
+    <div class="input-line">
+      <Select
+        v-if="enumOptions"
+        v-model="value"
+        :options="enumOptions"
+        option-label="label"
+        option-value="value"
+        size="small"
+        :placeholder="column.hint"
+        fluid
+      />
+      <Select
+        v-else-if="fkOptions"
+        v-model="value"
+        :options="fkOptions"
+        option-label="label"
+        option-value="value"
+        size="small"
+        filter
+        :placeholder="`Select from ${column.fk?.split('.')[0]}…`"
+        fluid
+      />
+      <InputText
+        v-else
+        v-model="value"
+        size="small"
+        :placeholder="column.hint"
+        :maxlength="column.length ?? undefined"
+        fluid
+      />
+      <slot name="append" />
+    </div>
   </div>
 </template>
 
@@ -101,4 +104,6 @@ const fkOptions = computed(() => {
   cursor: pointer;
 }
 label .mono { margin-left: auto; font-weight: 400; }
+.input-line { display: flex; align-items: center; gap: 0.15rem; }
+.input-line > :first-child { flex: 1; min-width: 0; }
 </style>

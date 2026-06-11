@@ -4,13 +4,13 @@ import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
-import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { post } from '../api'
 import HelpPanel from '../components/HelpPanel.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
+import PusServicePicker from '../components/PusServicePicker.vue'
 import { packetHelp, type HelpTopic } from '../help/wizardHelp'
 import { useSchema } from '../stores/schema'
 
@@ -43,19 +43,6 @@ const helpTopic = ref<HelpTopic | null>(null)
 function help(key: string) {
   helpTopic.value = packetHelp[key]
   helpVisible.value = true
-}
-
-const serviceOptions = computed(() =>
-  store.pusServices.flatMap((s) =>
-    s.tm.map((st) => ({
-      value: `${s.service}/${st.subtype}`,
-      label: `(${s.service},${st.subtype}) ${s.name} — ${st.name}`,
-      service: s.service, subtype: st.subtype,
-    }))))
-const selectedService = ref('3/25')
-function applyService() {
-  const opt = serviceOptions.value.find((o) => o.value === selectedService.value)
-  if (opt) { type.value = opt.service; stype.value = opt.subtype }
 }
 
 const isHk = computed(() => type.value === 3)
@@ -140,19 +127,14 @@ async function submit() {
       <h2>1. What kind of packet is it?</h2>
       <div class="grid-2">
         <div class="field-row">
-          <label v-tooltip.top="'PUS service / subtype of the packet. Housekeeping reports are (3,25).'">
-            PUS service <i class="pi pi-question-circle wq" @click="help('service')" />
+          <label v-tooltip.top="'PUS service type and subtype of the packet, e.g. (3,25) for a housekeeping report. Use the picker button if unsure.'">
+            PUS type / subtype <i class="pi pi-question-circle wq" @click="help('service')" />
           </label>
-          <Select v-model="selectedService" :options="serviceOptions" option-label="label"
-                  option-value="value" filter fluid @change="applyService" />
-        </div>
-        <div class="field-row">
-          <label v-tooltip.top="'The service type and subtype written into the PUS header of the packet. Pre-filled by the service selection on the left — only edit for mission-custom services.'">
-            Type / subtype (editable) <i class="pi pi-question-circle wq" @click="help('typestype')" />
-          </label>
-          <div style="display: flex; gap: 0.5rem">
-            <InputNumber v-model="type" :min="0" :max="255" show-buttons style="width: 50%" />
-            <InputNumber v-model="stype" :min="0" :max="255" show-buttons style="width: 50%" />
+          <div style="display: flex; gap: 0.5rem; align-items: center">
+            <InputNumber v-model="type" :min="0" :max="255" show-buttons style="flex: 1" />
+            <InputNumber v-model="stype" :min="0" :max="255" show-buttons style="flex: 1" />
+            <PusServicePicker side="tm" icon-only
+                              @select="(v) => { type = v.type; stype = v.stype }" />
           </div>
         </div>
         <div class="field-row">
@@ -237,9 +219,8 @@ async function submit() {
             <th v-tooltip.top="'Free text shown to operators in displays, max 24 characters (PCF_DESCR).'">Description</th>
             <th style="width: 5rem"
                 v-tooltip.top="'Parameter Type Code — the kind of value: 1 boolean, 2 enumerated state, 3 unsigned int, 4 signed int, 5 real, 8 text, 9 time. Use the type picker if unsure.'">PTC</th>
-            <th style="width: 5rem"
-                v-tooltip.top="'Parameter Format Code — the size variant of the PTC. For integers: PFC 4 = 8 bit, 12 = 16 bit, 14 = 32 bit. Together PTC and PFC fix how many bits the field occupies.'">PFC</th>
-            <th style="width: 9rem"></th>
+            <th style="width: 7.5rem"
+                v-tooltip.top="'Parameter Format Code — the size variant of the PTC. For integers: PFC 4 = 8 bit, 12 = 16 bit, 14 = 32 bit. Together PTC and PFC fix how many bits the field occupies. The sparkle button opens the type picker.'">PFC</th>
             <th style="width: 5rem"
                 v-tooltip.top="'Engineering unit shown next to calibrated values, max 4 characters, e.g. V, degC, mA. Leave empty for counters and states.'">Unit</th>
             <th style="width: 5rem"
@@ -258,9 +239,13 @@ async function submit() {
             <td><InputText v-model="p.name" maxlength="8" size="small" fluid /></td>
             <td><InputText v-model="p.descr" maxlength="24" size="small" fluid /></td>
             <td><InputNumber v-model="p.ptc" :min="1" :max="13" size="small" fluid /></td>
-            <td><InputNumber v-model="p.pfc" :min="0" size="small" fluid /></td>
-            <td><PtcPfcPicker side="tm" :ptc="p.ptc" :pfc="p.pfc"
-                              @select="(v) => { p.ptc = v.ptc; p.pfc = v.pfc }" /></td>
+            <td>
+              <div class="pfc-cell">
+                <InputNumber v-model="p.pfc" :min="0" size="small" fluid />
+                <PtcPfcPicker icon-only side="tm" :ptc="p.ptc" :pfc="p.pfc"
+                              @select="(v) => { p.ptc = v.ptc; p.pfc = v.pfc }" />
+              </div>
+            </td>
             <td><InputText v-model="p.unit" maxlength="4" size="small" fluid /></td>
             <td style="text-align: center">
               <input type="radio" name="pi1" :checked="p.is_pi1" @change="setPi1(i)"
@@ -317,4 +302,6 @@ async function submit() {
 .param-table td { padding: 0.2rem 0.25rem; }
 .param-table td.reorder { white-space: nowrap; }
 .param-table td.reorder .p-button { padding: 0.15rem; width: 1.6rem; }
+.pfc-cell { display: flex; align-items: center; gap: 2px; }
+.pfc-cell > :first-child { flex: 1; min-width: 0; }
 </style>

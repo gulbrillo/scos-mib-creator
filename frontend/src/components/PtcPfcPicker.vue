@@ -7,7 +7,8 @@ import { computed, ref, watch } from 'vue'
 import { useSchema } from '../stores/schema'
 import type { PtcEntry } from '../types'
 
-const props = defineProps<{ side: 'tm' | 'tc'; ptc?: number | null; pfc?: number | null }>()
+const props = defineProps<{ side: 'tm' | 'tc'; ptc?: number | null; pfc?: number | null
+                            iconOnly?: boolean }>()
 const emit = defineEmits<{ (e: 'select', v: { ptc: number; pfc: number; label: string }): void }>()
 
 const store = useSchema()
@@ -49,8 +50,8 @@ function apply() {
 
 <template>
   <Button
-    text size="small" icon="pi pi-sparkles" label="Type picker"
-    v-tooltip.top="'Pick the PTC/PFC pair from a plain-language list'"
+    text size="small" icon="pi pi-sparkles" :label="iconOnly ? undefined : 'Type picker'"
+    v-tooltip.top="'Type picker — choose the PTC/PFC pair from a plain-language list; OK fills the fields'"
     @click="visible = true"
   />
   <Dialog v-model:visible="visible" modal header="Choose a parameter type" :style="{ width: '560px' }">

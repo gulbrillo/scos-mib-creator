@@ -11,6 +11,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { get, post } from '../api'
 import HelpPanel from '../components/HelpPanel.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
+import PusServicePicker from '../components/PusServicePicker.vue'
 import { commandHelp, type HelpTopic } from '../help/wizardHelp'
 import { useSchema } from '../stores/schema'
 
@@ -70,19 +71,6 @@ const headerBits = computed(() =>
   headerFields.value.reduce((max, f) => Math.max(max, f.bit + f.len), 0))
 
 const fmtOffset = (bits: number) => `${Math.floor(bits / 8)}.${bits % 8}`
-
-const serviceOptions = computed(() =>
-  store.pusServices.flatMap((s) =>
-    s.tc.map((st) => ({
-      value: `${s.service}/${st.subtype}`,
-      label: `(${s.service},${st.subtype}) ${s.name} — ${st.name}`,
-      service: s.service, subtype: st.subtype,
-    }))))
-const selectedService = ref('8/1')
-function applyService() {
-  const opt = serviceOptions.value.find((o) => o.value === selectedService.value)
-  if (opt) { type.value = opt.service; stype.value = opt.subtype }
-}
 
 const kindOptions = [
   { value: 'editable', label: 'Editable — operator enters the value' },
@@ -180,19 +168,14 @@ async function submit() {
           <InputText v-model="descr" maxlength="24" placeholder="e.g. Set instrument mode" fluid />
         </div>
         <div class="field-row">
-          <label v-tooltip.top="'Most unit commands are (8,1) Perform function — the first argument is then a function ID.'">
-            PUS service <i class="pi pi-question-circle wq" @click="help('service')" />
+          <label v-tooltip.top="'PUS service type and subtype of the command, e.g. (8,1) Perform function. Use the picker button if unsure.'">
+            PUS type / subtype <i class="pi pi-question-circle wq" @click="help('service')" />
           </label>
-          <Select v-model="selectedService" :options="serviceOptions" option-label="label"
-                  option-value="value" filter fluid @change="applyService" />
-        </div>
-        <div class="field-row">
-          <label v-tooltip.top="'The service type and subtype written into the PUS header of the command packet. Pre-filled by the service selection — only edit for mission-custom services.'">
-            Type / subtype (editable) <i class="pi pi-question-circle wq" @click="help('typestype')" />
-          </label>
-          <div style="display: flex; gap: 0.5rem">
-            <InputNumber v-model="type" :min="0" :max="255" show-buttons style="width: 50%" />
-            <InputNumber v-model="stype" :min="0" :max="255" show-buttons style="width: 50%" />
+          <div style="display: flex; gap: 0.5rem; align-items: center">
+            <InputNumber v-model="type" :min="0" :max="255" show-buttons style="flex: 1" />
+            <InputNumber v-model="stype" :min="0" :max="255" show-buttons style="flex: 1" />
+            <PusServicePicker side="tc" icon-only
+                              @select="(v) => { type = v.type; stype = v.stype }" />
           </div>
         </div>
         <div class="field-row">
@@ -232,9 +215,8 @@ async function submit() {
                 v-tooltip.top="'Editable: the operator enters the value. Fixed: a locked parameter value (visible but unchangeable). Fixed area: constant bits baked into the packet, invisible to operators — typical for function IDs.'">Kind</th>
             <th style="width: 4.5rem"
                 v-tooltip.top="'Parameter Type Code — the kind of value: 2 enumerated state, 3 unsigned int, 4 signed int, 5 real, 8 text, 9 absolute time. Use the type picker if unsure.'">PTC</th>
-            <th style="width: 4.5rem"
-                v-tooltip.top="'Parameter Format Code — the size variant of the PTC. For integers: PFC 4 = 8 bit, 12 = 16 bit, 14 = 32 bit.'">PFC</th>
-            <th style="width: 8.5rem"></th>
+            <th style="width: 7rem"
+                v-tooltip.top="'Parameter Format Code — the size variant of the PTC. For integers: PFC 4 = 8 bit, 12 = 16 bit, 14 = 32 bit. The sparkle button opens the type picker.'">PFC</th>
             <th style="width: 7rem" v-tooltip.top="'Raw value for fixed parameters and areas, or the default offered to operators for editable ones. Leave empty to force the operator to enter a value.'">Value</th>
             <th style="width: 3rem"></th>
           </tr>
@@ -251,12 +233,14 @@ async function submit() {
             <td><InputText v-model="p.descr" maxlength="24" size="small" fluid /></td>
             <td><Select v-model="p.kind" :options="kindOptions" option-label="label" option-value="value" size="small" fluid /></td>
             <td v-if="p.kind !== 'area'"><InputNumber v-model="p.ptc" :min="1" :max="13" size="small" fluid /></td>
-            <td v-if="p.kind !== 'area'"><InputNumber v-model="p.pfc" :min="0" size="small" fluid /></td>
             <td v-if="p.kind !== 'area'">
-              <PtcPfcPicker side="tc" :ptc="p.ptc" :pfc="p.pfc"
-                            @select="(v) => { p.ptc = v.ptc; p.pfc = v.pfc }" />
+              <div class="pfc-cell">
+                <InputNumber v-model="p.pfc" :min="0" size="small" fluid />
+                <PtcPfcPicker icon-only side="tc" :ptc="p.ptc" :pfc="p.pfc"
+                              @select="(v) => { p.ptc = v.ptc; p.pfc = v.pfc }" />
+              </div>
             </td>
-            <td v-else colspan="3">
+            <td v-else colspan="2">
               <InputNumber v-model="p.bits" :min="1" :max="4096" size="small" placeholder="bits" fluid />
             </td>
             <td><InputText v-model="p.value" size="small" fluid /></td>
@@ -346,4 +330,6 @@ async function submit() {
 .param-table td { padding: 0.2rem 0.25rem; }
 .param-table td.reorder { white-space: nowrap; }
 .param-table td.reorder .p-button { padding: 0.15rem; width: 1.6rem; }
+.pfc-cell { display: flex; align-items: center; gap: 2px; }
+.pfc-cell > :first-child { flex: 1; min-width: 0; }
 </style>

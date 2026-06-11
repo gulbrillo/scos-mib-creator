@@ -12,6 +12,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { del, get, post, put } from '../api'
 import FieldInput from '../components/FieldInput.vue'
+import PtcPfcPicker from '../components/PtcPfcPicker.vue'
+import PusServicePicker from '../components/PusServicePicker.vue'
 import { useSchema } from '../stores/schema'
 import type { ColumnDef, MibRow, MibRowData } from '../types'
 
@@ -124,6 +126,47 @@ function removeRow(r: MibRow) {
 }
 
 const domain = computed(() => store.schema!.domains.find((d) => d.id === tableDef.value.domain))
+
+// "smart picker" buttons rendered next to certain inputs: PTC/PFC fields get
+// the type picker, PUS type/subtype fields get the service picker.
+interface PickerInfo {
+  kind: 'ptc' | 'pus'
+  side: 'tm' | 'tc'
+  typeCol: string
+  secondCol: string
+}
+const PUS_TABLES: Record<string, [string, string, 'tm' | 'tc']> = {
+  pid: ['PID_TYPE', 'PID_STYPE', 'tm'],
+  pic: ['PIC_TYPE', 'PIC_STYPE', 'tm'],
+  ccf: ['CCF_TYPE', 'CCF_STYPE', 'tc'],
+}
+function pickerFor(colName: string): PickerInfo | null {
+  if (colName.endsWith('_PTC') || colName.endsWith('_PFC')) {
+    const prefix = colName.slice(0, -4)
+    const cols = tableDef.value.columns.map((c) => c.name)
+    if (cols.includes(`${prefix}_PTC`) && cols.includes(`${prefix}_PFC`)) {
+      return {
+        kind: 'ptc',
+        side: tableDef.value.domain.startsWith('tm') ? 'tm' : 'tc',
+        typeCol: `${prefix}_PTC`,
+        secondCol: `${prefix}_PFC`,
+      }
+    }
+  }
+  const pus = PUS_TABLES[tableDef.value.name]
+  if (pus && (colName === pus[0] || colName === pus[1])) {
+    return { kind: 'pus', side: pus[2], typeCol: pus[0], secondCol: pus[1] }
+  }
+  return null
+}
+function applyPtc(p: PickerInfo, v: { ptc: number; pfc: number }) {
+  draft.value[p.typeCol] = String(v.ptc)
+  draft.value[p.secondCol] = String(v.pfc)
+}
+function applyPus(p: PickerInfo, v: { type: number; stype: number }) {
+  draft.value[p.typeCol] = String(v.type)
+  draft.value[p.secondCol] = String(v.stype)
+}
 </script>
 
 <template>
@@ -187,7 +230,24 @@ const domain = computed(() => store.schema!.domains.find((d) => d.id === tableDe
           :fk-rows="c.fk ? fkRows[c.fk.split('.')[0]] : undefined"
           :fk-label-col="c.fk ? fkLabelCol(c) : undefined"
           @help="showHelp(c)"
-        />
+        >
+          <template v-if="pickerFor(c.name)" #append>
+            <PtcPfcPicker
+              v-if="pickerFor(c.name)!.kind === 'ptc'"
+              icon-only
+              :side="pickerFor(c.name)!.side"
+              :ptc="Number(draft[pickerFor(c.name)!.typeCol]) || null"
+              :pfc="Number(draft[pickerFor(c.name)!.secondCol]) || null"
+              @select="(v) => applyPtc(pickerFor(c.name)!, v)"
+            />
+            <PusServicePicker
+              v-else
+              icon-only
+              :side="pickerFor(c.name)!.side"
+              @select="(v) => applyPus(pickerFor(c.name)!, v)"
+            />
+          </template>
+        </FieldInput>
       </div>
       <template #footer>
         <Button v-if="editRow && canWrite" text severity="danger" icon="pi pi-trash"
