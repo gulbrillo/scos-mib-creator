@@ -280,15 +280,21 @@ async function submit() {
       </div>
 
       <template v-if="params.length">
-        <h3 style="margin-top: 1rem">Packet map (byte.bit offsets from packet start)</h3>
+        <h3 style="margin-top: 1rem">Packet map (byte.bit offsets from packet start)
+          <i class="pi pi-question-circle wq" @click="help('map')" /></h3>
         <div class="byte-map">
-          <span class="seg hdr">0 · CCSDS header (6 B)</span>
-          <span class="seg hdr">6 · Data field header ({{ dfhSize }} B)</span>
+          <span class="seg hdr clickable" @click="help('map')"
+                v-tooltip.top="'Fixed by the CCSDS standard, not defined in the MIB — click for details'">
+            0 · CCSDS header (6 B)</span>
+          <span class="seg hdr clickable" @click="help('map')"
+                v-tooltip.top="'PUS secondary header — only its size is stored in the MIB (PID_DFHSIZE). Click for details'">
+            6 · Data field header ({{ dfhSize }} B)</span>
           <span v-for="(l, i) in layout" :key="i" class="seg"
                 v-tooltip.top="`${l.bits} bits`">
             {{ l.byte }}.{{ l.bit }} · {{ l.p.name || '?' }}
           </span>
-          <span v-if="hasPec" class="seg hdr">CRC (2 B)</span>
+          <span v-if="hasPec" class="seg hdr clickable" @click="help('pec')"
+                v-tooltip.top="'Packet Error Control — click for details'">CRC (2 B)</span>
         </div>
         <p class="muted small">Total packet size: {{ totalBytes }} bytes</p>
       </template>

@@ -99,3 +99,5 @@ h3 { font-size: 1rem; margin: 0 0 0.5rem; }
   background: var(--p-surface-200);
   border-color: var(--p-surface-400);
 }
+.byte-map .seg.clickable { cursor: pointer; }
+.byte-map .seg.clickable:hover { border-color: var(--p-primary-color); }

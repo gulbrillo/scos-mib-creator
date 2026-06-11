@@ -7,6 +7,8 @@ export interface HelpTopic {
   body: string[]
   example?: string
   ref?: string
+  // optional in-app links; "{id}" is replaced with the current project id
+  links?: { label: string; to: string }[]
 }
 
 const APID: HelpTopic = {
@@ -178,6 +180,37 @@ export const packetHelp: Record<string, HelpTopic> = {
     ],
     ref: 'ICD §3.3.2.1.1 (pcf), §3.3.2.5.1 (plf), Appendix A (PTC/PFC).',
   },
+  map: {
+    title: 'Anatomy of a TM packet',
+    body: [
+      'Every TM packet has the same skeleton:\n'
+      + '[1] CCSDS primary header — 6 bytes\n'
+      + '[2] Data field header (PUS secondary header)\n'
+      + '[3] Source data — your parameters\n'
+      + '[4] Packet Error Control (CRC) — 2 bytes, if used',
+      '[1] The CCSDS primary header (bytes 0–5: version, type, APID, '
+      + 'sequence flags/counter, packet length) is fixed by the CCSDS '
+      + 'standard. It is NOT defined anywhere in the MIB — every ground '
+      + 'system knows it implicitly. The APID value inside it is the one you '
+      + 'enter in this wizard.',
+      '[2] The data field header (PUS version, service type/subtype, time '
+      + 'stamp, spare) is also not laid out field-by-field in the MIB for '
+      + 'telemetry: the MIB only records its total size (PID_DFHSIZE — the '
+      + '"Data field header size" field in step 2) so the ground knows where '
+      + 'your data begins. Its internal layout is fixed by your mission '
+      + 'space-to-ground ICD.',
+      '[3] Only the source data is described in detail: each parameter gets '
+      + 'a plf record with its byte.bit offset, counted from byte 0 of the '
+      + 'whole packet — exactly the numbers shown in this map.',
+      'In short: for TM packets there is no header-definition table to '
+      + 'maintain — you only set the header size, and define your data.',
+    ],
+    ref: 'ICD §3.3.2.4.1 (pid), §3.3.2.5.1 (plf); CCSDS 133.0-B.',
+    links: [
+      { label: 'Open the TM packet table (pid)', to: '/project/{id}/table/pid' },
+      { label: 'Open the parameter locations table (plf)', to: '/project/{id}/table/plf' },
+    ],
+  },
 }
 
 export const commandHelp: Record<string, HelpTopic> = {
@@ -287,5 +320,38 @@ export const commandHelp: Record<string, HelpTopic> = {
       + 'verify via telemetry values later (cve table).',
     ],
     ref: 'ECSS-E-ST-70-41 service 1; ICD §3.3.3.4 (cvs/cve/cvp), CCF_ACK.',
+  },
+  map: {
+    title: 'Anatomy of a TC packet',
+    body: [
+      'A command packet = packet header + application data.',
+      'The HEADER (CCSDS primary header + PUS secondary header) is defined '
+      + 'once in the MIB and reused by every command. Unlike on the TM side, '
+      + 'the TC header IS laid out bit-by-bit in three tables (sidebar → '
+      + '"TC packet headers"):\n'
+      + '• tcp — names a header definition (your project: PUSTC, created by '
+      + 'the starter content)\n'
+      + '• pcpc — the parameters a header can carry (APID, type, subtype, '
+      + 'ack flags, …)\n'
+      + '• pcdf — the actual layout: every header field with its bit offset, '
+      + 'length and value source',
+      'Header fields are filled automatically at release time: fields of '
+      + 'type A/T/S/K take the APID, service type, subtype and ack flags '
+      + 'from each command (the values you enter in this wizard); P fields '
+      + '(sequence counter, packet length) are set by the ground system; F '
+      + 'fields are constants.',
+      'The APPLICATION DATA — your arguments — is what this wizard defines '
+      + 'per command (cdf table). Its bit offsets are stored relative to the '
+      + 'END of the header, so command definitions stay valid even if the '
+      + 'header definition changes. The map below shows both: header fields '
+      + 'from the pcdf definition (grey) and your arguments, with byte.bit '
+      + 'offsets from the start of the packet.',
+    ],
+    ref: 'ICD §3.3.3.1 (tcp/pcpc/pcdf), §3.3.3.2.3 (cdf).',
+    links: [
+      { label: 'Open the header layout editor (pcdf)', to: '/project/{id}/table/pcdf' },
+      { label: 'Open the header list (tcp)', to: '/project/{id}/table/tcp' },
+      { label: 'Open the command layout table (cdf)', to: '/project/{id}/table/cdf' },
+    ],
   },
 }

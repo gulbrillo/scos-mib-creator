@@ -6,9 +6,9 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { post } from '../api'
+import { get, post } from '../api'
 import HelpPanel from '../components/HelpPanel.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
 import { commandHelp, type HelpTopic } from '../help/wizardHelp'
@@ -46,6 +46,30 @@ function help(key: string) {
   helpTopic.value = commandHelp[key]
   helpVisible.value = true
 }
+
+// packet header definition (tcp/pcdf) — used to draw the full packet map
+interface HeaderField { desc: string; bit: number; len: number; type: string }
+const headerName = ref('')
+const headerFields = ref<HeaderField[]>([])
+onMounted(async () => {
+  const tcps = await get(`/api/projects/${projectId.value}/tables/tcp/rows`)
+  if (!tcps.length) return
+  headerName.value = String(tcps[0].data.TCP_ID ?? '')
+  const pcdf = await get(`/api/projects/${projectId.value}/tables/pcdf/rows`)
+  headerFields.value = pcdf
+    .filter((r: any) => r.data.PCDF_TCNAME === headerName.value)
+    .map((r: any) => ({
+      desc: String(r.data.PCDF_DESC || r.data.PCDF_PNAME || 'field'),
+      bit: Number(r.data.PCDF_BIT || 0),
+      len: Number(r.data.PCDF_LEN || 0),
+      type: String(r.data.PCDF_TYPE || 'F'),
+    }))
+    .sort((a: HeaderField, b: HeaderField) => a.bit - b.bit)
+})
+const headerBits = computed(() =>
+  headerFields.value.reduce((max, f) => Math.max(max, f.bit + f.len), 0))
+
+const fmtOffset = (bits: number) => `${Math.floor(bits / 8)}.${bits % 8}`
 
 const serviceOptions = computed(() =>
   store.pusServices.flatMap((s) =>
@@ -249,12 +273,29 @@ async function submit() {
                 @click="params.push({ pname: '', descr: 'Function ID', ptc: 3, pfc: 12, kind: 'fixed', bits: null, value: '', unit: '', defval: '' })" />
       </div>
       <template v-if="params.length">
-        <h3 style="margin-top: 1rem">Application data map (bit offsets after packet header)</h3>
+        <h3 style="margin-top: 1rem">Packet map (byte.bit offsets from packet start)
+          <i class="pi pi-question-circle wq" @click="help('map')" /></h3>
         <div class="byte-map">
+          <template v-if="headerFields.length">
+            <span v-for="(f, i) in headerFields" :key="`h${i}`" class="seg hdr clickable"
+                  @click="help('map')"
+                  v-tooltip.top="`${f.len} bit(s) — header field from the ${headerName} definition (pcdf). Click for details`">
+              {{ fmtOffset(f.bit) }} · {{ f.desc }}
+            </span>
+          </template>
+          <span v-else class="seg hdr clickable" @click="help('map')"
+                v-tooltip.top="'No TC packet header defined yet — click for details'">
+            packet header (?)
+          </span>
           <span v-for="(l, i) in layout" :key="i" class="seg" v-tooltip.top="`${l.bits} bits`">
-            {{ l.start }} · {{ l.p.kind === 'area' ? (l.p.descr || 'area') : (l.p.pname || '?') }}
+            {{ fmtOffset(headerBits + l.start) }} · {{ l.p.kind === 'area' ? (l.p.descr || 'area') : (l.p.pname || '?') }}
           </span>
         </div>
+        <p class="muted small" v-if="headerFields.length">
+          Grey = packet header "{{ headerName }}" ({{ headerBits / 8 }} bytes), defined once in
+          tcp/pcpc/pcdf and shared by all commands. Colored = this command's arguments
+          (cdf), whose stored offsets are relative to the end of the header.
+        </p>
       </template>
     </div>
 
