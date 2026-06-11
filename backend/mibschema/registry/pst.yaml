@@ -1,0 +1,20 @@
+table: pst
+file: pst.dat
+title: Parameter sets
+icd: 3.3.3.5.1
+row_label: "{PST_NAME}"
+description: >
+  Advanced/optional: a named set of command or sequence parameters for which
+  groups of values (psv/pvs) can be stored and loaded together.
+columns:
+  - name: PST_NAME
+    label: Set name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique name of the parameter set.
+  - name: PST_DESCR
+    label: Description
+    type: char
+    length: 24

@@ -1,0 +1,29 @@
+table: prv
+file: prv.dat
+title: TC range values
+icd: 3.3.3.7.2
+row_label: "{PRV_NUMBR}: {PRV_MINVAL}..{PRV_MAXVAL}"
+description: >
+  The allowed values/ranges of the TC range sets (prf). Leave "Max" empty for a
+  single allowed value; several records build a set of allowed ranges.
+columns:
+  - name: PRV_NUMBR
+    label: Range set
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    fk: prf.PRF_NUMBR
+    hint: The prf range set this entry belongs to.
+  - name: PRV_MINVAL
+    label: Min / allowed value
+    type: char
+    length: 17
+    key: true
+    mandatory: true
+    hint: Lower bound of the range, or the single allowed value if "Max" is empty.
+  - name: PRV_MAXVAL
+    label: Max value
+    type: char
+    length: 17
+    hint: Upper bound (inclusive). Empty = only the exact "Min" value is allowed.

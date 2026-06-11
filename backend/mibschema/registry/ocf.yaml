@@ -1,0 +1,64 @@
+table: ocf
+file: ocf.dat
+title: Limit check definitions
+icd: 3.3.2.3.1
+row_label: "{OCF_NAME}"
+description: >
+  One record per parameter that is limit-checked on ground. The actual limit
+  values (possibly several sets, e.g. mode-dependent) are defined in ocp.
+columns:
+  - name: OCF_NAME
+    label: Parameter
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: The monitoring parameter to check.
+  - name: OCF_NBCHCK
+    label: Samples before alarm
+    type: number
+    length: 2
+    mandatory: true
+    default: "1"
+    hint: Number of consecutive violating samples before the alarm is raised (1 = immediately).
+    help: >
+      Use a value greater than 1 to filter out single noisy samples - e.g. 3
+      means the value must violate the limit three times in a row before the
+      operator is alerted.
+  - name: OCF_NBOOL
+    label: Number of checks
+    type: number
+    length: 2
+    mandatory: true
+    default: "1"
+    hint: Number of ocp records for this parameter. Kept in sync automatically.
+  - name: OCF_INTER
+    label: Limit interpretation
+    type: char
+    length: 1
+    mandatory: true
+    default: "C"
+    enum:
+      - value: "C"
+        label: Calibrated (engineering)
+        help: Limit values in ocp are engineering values (after calibration).
+      - value: "U"
+        label: Uncalibrated (raw)
+        help: Limit values in ocp are raw values.
+    hint: Whether the limit values are engineering or raw values.
+  - name: OCF_CODIN
+    label: Limit value format
+    type: char
+    length: 1
+    mandatory: true
+    default: "I"
+    enum:
+      - value: "R"
+        label: Real
+      - value: "I"
+        label: Integer
+      - value: "A"
+        label: ASCII (status text)
+        help: For status parameters - the expected state text, e.g. "ON".
+    hint: Format of the limit values entered in ocp.

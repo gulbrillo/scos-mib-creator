@@ -1,0 +1,62 @@
+table: cve
+file: cve.dat
+title: Verification expressions
+icd: 3.3.3.4.2
+row_label: "Stage {CVE_CVSID}: {CVE_PARNAM}"
+description: >
+  For verification stages of type "TM parameter check" (CVS_SOURCE = V): the
+  monitoring parameter conditions that prove the command worked, e.g. "mode
+  parameter equals the commanded mode within 10 s".
+columns:
+  - name: CVE_CVSID
+    label: Stage
+    type: number
+    length: 5
+    key: true
+    mandatory: true
+    fk: cvs.CVS_ID
+    hint: The verification stage (cvs) this expression belongs to.
+  - name: CVE_PARNAM
+    label: TM parameter
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: The monitoring parameter checked.
+  - name: CVE_INTER
+    label: Value representation
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Raw
+      - value: "E"
+        label: Engineering
+      - value: "C"
+        label: Command parameter
+        help: The expected value is taken from a command argument - enter its name in "Expected value".
+    hint: How the expected value is expressed.
+  - name: CVE_VAL
+    label: Expected value
+    type: char
+    length: 17
+    hint: Value the parameter must reach (or the name of the command parameter providing it).
+  - name: CVE_TOL
+    label: Tolerance
+    type: char
+    length: 17
+    hint: Allowed +/- tolerance for numeric checks (raw representation only). Empty = exact match.
+  - name: CVE_CHECK
+    label: Usage
+    type: char
+    length: 1
+    default: "B"
+    enum:
+      - value: "B"
+        label: Verification + status consistency
+      - value: "S"
+        label: Status consistency only
+        help: Only updates the "last commanded value" used by status consistency checks; no actual verification.
+    hint: Normal verification (B) or status-consistency bookkeeping only (S).

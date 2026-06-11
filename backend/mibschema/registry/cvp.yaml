@@ -1,0 +1,38 @@
+table: cvp
+file: cvp.dat
+title: Verification assignments
+icd: 3.3.3.4.3
+row_label: "{CVP_TASK} -> stage {CVP_CVSID}"
+description: >
+  Connects commands to their verification stages: one record per (command,
+  stage) pair. A command with acceptance + completion verification has two
+  records here.
+columns:
+  - name: CVP_TASK
+    label: Command
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: ccf.CCF_CNAME
+    hint: The command this verification stage applies to.
+  - name: CVP_TYPE
+    label: Task type
+    type: char
+    length: 1
+    key: true
+    default: "C"
+    enum:
+      - value: "C"
+        label: Command
+      - value: "S"
+        label: Sequence (not supported by SCOS-2000)
+    hint: Leave at C - sequence-level verification is not supported by SCOS-2000.
+  - name: CVP_CVSID
+    label: Stage
+    type: number
+    length: 5
+    key: true
+    mandatory: true
+    fk: cvs.CVS_ID
+    hint: The verification stage (cvs) assigned to the command.

@@ -1,0 +1,24 @@
+table: dst
+file: dst.dat
+title: Command routing
+icd: 3.3.3.2.1.1
+row_label: "APID {DST_APID}: {DST_ROUTE}"
+description: >
+  Optional routing information per command APID, used by the control system to
+  select the uplink path. For a single-route EGSE setup one record with route
+  "TC" (or your mission's route string) per APID is typical; often this table
+  can stay empty - ask your ground segment team.
+columns:
+  - name: DST_APID
+    label: APID
+    type: number
+    length: 5
+    key: true
+    mandatory: true
+    hint: Command APID this route applies to.
+  - name: DST_ROUTE
+    label: Route
+    type: char
+    length: 30
+    mandatory: true
+    hint: Routing/destination string, e.g. "TC" for spacecraft commands (mission-specific).

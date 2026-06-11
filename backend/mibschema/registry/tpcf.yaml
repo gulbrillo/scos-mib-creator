@@ -1,0 +1,27 @@
+table: tpcf
+file: tpcf.dat
+title: TM packet characteristics
+icd: 3.3.2.4.3
+row_label: "{TPCF_SPID}: {TPCF_NAME}"
+description: >
+  Optional extra information per packet: a short mnemonic shown in displays and
+  the expected packet size. Recommended for every pid record.
+columns:
+  - name: TPCF_SPID
+    label: SPID
+    type: number
+    length: 10
+    key: true
+    mandatory: true
+    fk: pid.PID_SPID
+    hint: The packet (pid record) this entry describes.
+  - name: TPCF_NAME
+    label: Packet mnemonic
+    type: char
+    length: 12
+    hint: Short name shown in ground displays, e.g. "XYZ_HK1".
+  - name: TPCF_SIZE
+    label: Packet size (bytes)
+    type: number
+    length: 8
+    hint: Total packet length in bytes including all headers. Used for consistency checking.

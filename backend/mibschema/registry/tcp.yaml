@@ -1,0 +1,23 @@
+table: tcp
+file: tcp.dat
+title: TC packet headers
+icd: 3.3.3.1.1
+row_label: "{TCP_ID}"
+description: >
+  Telecommand packet header definitions. Every command (ccf) references one
+  header via CCF_PKTID. Typically a single PUS header is defined once and
+  reused by all commands - the "New project" setup can create a standard one
+  for you.
+columns:
+  - name: TCP_ID
+    label: Header name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique name of this packet header, e.g. "PUSTC".
+  - name: TCP_DESC
+    label: Description
+    type: char
+    length: 24
+    hint: e.g. "Standard PUS TC header".

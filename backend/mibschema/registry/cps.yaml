@@ -1,0 +1,29 @@
+table: cps
+file: cps.dat
+title: Parameter set contents
+icd: 3.3.3.5.3
+row_label: "{CPS_NAME}: {CPS_PAR}"
+description: >
+  Advanced/optional: which parameters belong to each parameter set (pst).
+columns:
+  - name: CPS_NAME
+    label: Parameter set
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pst.PST_NAME
+    hint: The parameter set (pst).
+  - name: CPS_PAR
+    label: Parameter
+    type: char
+    length: 8
+    mandatory: true
+    hint: Name of the command parameter (cpc) or sequence formal parameter (csp).
+  - name: CPS_BIT
+    label: Bit offset / number
+    type: number
+    length: 4
+    key: true
+    mandatory: true
+    hint: For command parameters - the bit offset (CDF_BIT); for formal parameters - the number (CSP_FPNUM).

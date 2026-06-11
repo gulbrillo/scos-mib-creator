@@ -1,0 +1,71 @@
+table: cvs
+file: cvs.dat
+title: Verification stages
+icd: 3.3.3.4.1
+row_label: "Stage {CVS_ID} ({CVS_TYPE})"
+description: >
+  Defines how one verification step of a command works: which execution stage
+  it covers (acceptance / start / completion), whether it is verified by PUS
+  service-1 reports or by checking TM values, and its timing window. Stages
+  are attached to commands via cvp.
+columns:
+  - name: CVS_ID
+    label: Stage ID
+    type: number
+    length: 5
+    key: true
+    mandatory: true
+    hint: Unique numeric ID of this verification stage.
+  - name: CVS_TYPE
+    label: Stage type
+    type: char
+    length: 1
+    mandatory: true
+    default: "A"
+    enum:
+      - value: "A"
+        label: Application acceptance
+        help: Verifies the on-board application accepted the command (PUS 1,1 / 1,2).
+      - value: "S"
+        label: Start of execution
+        help: Verifies execution started (PUS 1,3 / 1,4).
+      - value: "C"
+        label: Completion
+        help: Verifies execution completed (PUS 1,7 / 1,8).
+    hint: Which point of the command's life this stage verifies.
+  - name: CVS_SOURCE
+    label: Verification source
+    type: char
+    length: 1
+    mandatory: true
+    default: "R"
+    enum:
+      - value: "R"
+        label: Service-1 reports
+        help: Uses the PUS request-verification telemetry (the normal case).
+      - value: "V"
+        label: TM parameter check
+        help: Verifies by checking monitoring parameter values defined in cve.
+    hint: Verify via PUS service-1 reports, or by watching TM values (cve).
+  - name: CVS_START
+    label: Window start (s)
+    type: number
+    length: 5
+    mandatory: true
+    default: "0"
+    signed: true
+    hint: Delta time after release (or execution time for time-tagged commands) when checking starts.
+  - name: CVS_INTERVAL
+    label: Window length (s)
+    type: number
+    length: 5
+    mandatory: true
+    default: "10"
+    hint: How long the ground waits for the verification to succeed before declaring it failed.
+  - name: CVS_SPID
+    label: Report packet (SPID)
+    type: number
+    length: 10
+    signed: true
+    fk: pid.PID_SPID
+    hint: Advanced - restrict verification to one specific report packet; empty/-1 = any matching service-1 report.

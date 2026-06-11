@@ -1,0 +1,52 @@
+table: pvs
+file: pvs.dat
+title: Parameter value set contents
+icd: 3.3.3.5.4
+row_label: "{PVS_ID}: {PVS_PNAME}"
+description: >
+  Advanced/optional: the actual values of each parameter value set (psv).
+columns:
+  - name: PVS_ID
+    label: Value set
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: psv.PSV_PVSID
+    hint: The value set (psv) this value belongs to.
+  - name: PVS_PSID
+    label: Parameter set
+    type: char
+    length: 8
+    mandatory: true
+    fk: pst.PST_NAME
+    hint: The parameter set the value set instantiates.
+  - name: PVS_PNAME
+    label: Parameter
+    type: char
+    length: 8
+    mandatory: true
+    hint: The parameter receiving this value.
+  - name: PVS_INTER
+    label: Value representation
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Raw
+      - value: "E"
+        label: Engineering
+    hint: Whether the value is raw or engineering.
+  - name: PVS_VALS
+    label: Value
+    type: char
+    length: 17
+    hint: The value. Empty = keep the parameter's current/default value.
+  - name: PVS_BIT
+    label: Bit offset / number
+    type: number
+    length: 4
+    key: true
+    mandatory: true
+    hint: For command parameters - the bit offset (CDF_BIT); for formal parameters - the number (CSP_FPNUM).

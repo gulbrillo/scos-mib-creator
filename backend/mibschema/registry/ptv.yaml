@@ -1,0 +1,43 @@
+table: ptv
+file: ptv.dat
+title: Pre-transmission validation
+icd: 3.3.3.2.4
+row_label: "{PTV_CNAME}: {PTV_PARNAM}"
+description: >
+  Conditions checked on ground before a command is released: "command X may
+  only be sent while TM parameter Y has value Z" (e.g. only when the unit is
+  ON). Several records per command must all be satisfied.
+columns:
+  - name: PTV_CNAME
+    label: Command
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: ccf.CCF_CNAME
+    hint: The command guarded by this condition.
+  - name: PTV_PARNAM
+    label: TM parameter
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: The monitoring parameter checked before release.
+  - name: PTV_INTER
+    label: Value representation
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Raw
+      - value: "E"
+        label: Engineering
+    hint: Whether the expected value is raw or engineering/status text.
+  - name: PTV_VAL
+    label: Expected value
+    type: char
+    length: 17
+    mandatory: true
+    hint: Value the parameter must have for the command to be released (e.g. "ON").

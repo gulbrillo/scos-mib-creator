@@ -1,0 +1,145 @@
+table: vpd
+file: vpd.dat
+title: Variable packet definitions
+icd: 3.3.2.5.2
+row_label: "TPSD {VPD_TPSD} #{VPD_POS}: {VPD_NAME}"
+description: >
+  Describes packets whose layout is not fixed: parameters listed in order, with
+  support for repeating groups (counters) and "choice"/deduced fields. Used for
+  packets like PUS (20,2) parameter reports or any structure with N-times
+  repeated blocks. Linked from pid via the TPSD number.
+columns:
+  - name: VPD_TPSD
+    label: Structure ID (TPSD)
+    type: number
+    length: 10
+    key: true
+    mandatory: true
+    fk: pid.PID_TPSD
+    hint: The variable structure this entry belongs to (PID_TPSD of the packet).
+  - name: VPD_POS
+    label: Position
+    type: number
+    length: 4
+    key: true
+    mandatory: true
+    hint: Ordinal position of this entry inside the structure (1, 2, 3, ...).
+  - name: VPD_NAME
+    label: Parameter
+    type: char
+    length: 8
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: The monitoring parameter appearing at this position.
+  - name: VPD_GRPSIZE
+    label: Group size
+    type: number
+    length: 3
+    hint: If this parameter is a repeat counter - the number of following entries that repeat. 0/empty otherwise.
+    help: >
+      Set on the counter parameter ("N") that precedes a repeating block: the
+      next "group size" entries are repeated N times, where N is the counter's
+      telemetry value. Nested groups are allowed.
+  - name: VPD_FIXREP
+    label: Fixed repeat count
+    type: number
+    length: 3
+    hint: If the group repeats a fixed number of times (no counter in TM), the count; else 0/empty.
+  - name: VPD_CHOICE
+    label: Choice field
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+        help: The value of this parameter selects (as a TPSD number) the structure of the rest of the packet.
+      - value: "N"
+        label: "No"
+    hint: Advanced - this parameter's value chooses how the remainder of the packet is decoded.
+  - name: VPD_PIDREF
+    label: Value is parameter ID
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+        help: The value delivered here is an on-board parameter ID (PCF_PID) used to interpret following deduced parameters.
+      - value: "N"
+        label: "No"
+    hint: Advanced - this field carries the on-board ID of a following deduced parameter.
+  - name: VPD_DISDESC
+    label: Display label
+    type: char
+    length: 16
+    hint: Column label used when this packet is shown/printed.
+  - name: VPD_WIDTH
+    label: Display width
+    type: number
+    length: 2
+    mandatory: true
+    default: "0"
+    hint: Display field width in characters (0 = hide this parameter in displays).
+  - name: VPD_JUSTIFY
+    label: Display justification
+    type: char
+    length: 1
+    default: "L"
+    enum:
+      - value: "L"
+        label: Left
+      - value: "R"
+        label: Right
+      - value: "C"
+        label: Centered
+    hint: Display-only setting.
+  - name: VPD_NEWLINE
+    label: New line
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+    hint: Display-only - start a new line before this value.
+  - name: VPD_DCHAR
+    label: Displayed data
+    type: number
+    length: 1
+    default: "0"
+    enum:
+      - value: "0"
+        label: Value only
+      - value: "1"
+        label: Value + name
+      - value: "2"
+        label: Value + description
+      - value: "3"
+        label: Value + name + description
+    hint: Display-only - what to show alongside the value.
+  - name: VPD_FORM
+    label: Display format
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "N"
+        label: Normal (engineering)
+      - value: "B"
+        label: Binary (raw)
+      - value: "O"
+        label: Octal (raw)
+      - value: "D"
+        label: Decimal (raw)
+      - value: "H"
+        label: Hexadecimal (raw)
+    hint: Display-only - representation of the value.
+  - name: VPD_OFFSET
+    label: Bit offset shift
+    type: number
+    length: 6
+    signed: true
+    hint: Advanced - shift in bits between the end of the previous parameter and the start of this one (e.g. to skip padding).

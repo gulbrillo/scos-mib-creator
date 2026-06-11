@@ -1,0 +1,74 @@
+table: prf
+file: prf.dat
+title: TC range sets
+icd: 3.3.3.7.1
+row_label: "{PRF_NUMBR}"
+description: >
+  Named sets of allowed values/ranges for command parameters. A parameter
+  referencing a range set (CPC_PRFREF) only accepts values inside one of the
+  ranges defined in prv - the ground refuses anything else at preparation time.
+columns:
+  - name: PRF_NUMBR
+    label: Range set name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique identifier, referenced from CPC_PRFREF.
+  - name: PRF_DESCR
+    label: Description
+    type: char
+    length: 24
+  - name: PRF_INTER
+    label: Value representation
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Raw
+      - value: "E"
+        label: Engineering
+    hint: Whether the range values in prv are raw or engineering values.
+  - name: PRF_DSPFMT
+    label: Value format
+    type: char
+    length: 1
+    default: "U"
+    enum:
+      - value: "A"
+        label: ASCII
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+      - value: "T"
+        label: Absolute time
+      - value: "D"
+        label: Relative time
+    hint: Format of the values written in prv.
+  - name: PRF_RADIX
+    label: Radix
+    type: char
+    length: 1
+    default: "D"
+    enum:
+      - value: "D"
+        label: Decimal
+      - value: "H"
+        label: Hexadecimal
+      - value: "O"
+        label: Octal
+    hint: Radix of unsigned range values.
+  - name: PRF_NRANGE
+    label: Number of ranges
+    type: number
+    length: 3
+    hint: Number of prv records for this set. Kept in sync automatically.
+  - name: PRF_UNIT
+    label: Engineering unit
+    type: char
+    length: 4
+    hint: Unit of engineering range values (consistency checking only).

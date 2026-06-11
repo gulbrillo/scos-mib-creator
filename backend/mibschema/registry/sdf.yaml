@@ -1,0 +1,98 @@
+table: sdf
+file: sdf.dat
+title: Sequence element parameters
+icd: 3.3.3.3.3
+row_label: "{SDF_SQNAME} #{SDF_ENTRY} {SDF_PNAME}"
+description: >
+  Parameter values for the commands (or nested sequences) inside a sequence:
+  for each editable parameter of each element, where its value comes from -
+  a literal value, a default, or a sequence formal parameter.
+columns:
+  - name: SDF_SQNAME
+    label: Sequence
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: csf.CSF_NAME
+    hint: The sequence containing the element.
+  - name: SDF_ENTRY
+    label: Entry number
+    type: number
+    length: 5
+    key: true
+    mandatory: true
+    hint: The css entry number of the element this value belongs to.
+  - name: SDF_ELEMID
+    label: Element
+    type: char
+    length: 8
+    mandatory: true
+    hint: Name of the command/sequence at that entry (must match CSS_ELEMID).
+  - name: SDF_POS
+    label: Parameter position
+    type: number
+    length: 4
+    key: true
+    mandatory: true
+    hint: Position of the parameter within the element (1, 2, ...).
+  - name: SDF_PNAME
+    label: Parameter
+    type: char
+    length: 8
+    key: true
+    hint: Name of the command parameter (cpc) or formal parameter receiving the value.
+  - name: SDF_FTYPE
+    label: Editability
+    type: char
+    length: 1
+    default: "E"
+    enum:
+      - value: "F"
+        label: Fixed
+        help: Operators cannot change the value once the sequence is loaded.
+      - value: "E"
+        label: Editable
+    hint: Whether operators may edit the value after loading.
+  - name: SDF_VTYPE
+    label: Value source
+    type: char
+    length: 1
+    mandatory: true
+    default: "R"
+    enum:
+      - value: "R"
+        label: Literal (raw)
+        help: The value below, as a raw value.
+      - value: "E"
+        label: Literal (engineering)
+        help: The value below, as an engineering value.
+      - value: "F"
+        label: Sequence formal parameter
+        help: Takes the value of the formal parameter (csp) named below.
+      - value: "P"
+        label: TM parameter (dynamic)
+        help: Takes the current value of the monitoring parameter named below.
+      - value: "S"
+        label: Formal parameter default
+        help: Uses the default defined in the csp record.
+      - value: "D"
+        label: Command default
+        help: Uses the default from the command definition (cdf/cpc).
+    hint: Where this parameter's value comes from.
+  - name: SDF_VALUE
+    label: Value
+    type: char
+    length: 17
+    hint: The literal value, or the name of the formal/TM parameter providing it (per "Value source").
+  - name: SDF_VALSET
+    label: Value set
+    type: char
+    length: 8
+    fk: psv.PSV_PVSID
+    hint: Advanced - parameter value set used for a nested sequence element.
+  - name: SDF_REPPOS
+    label: Repeat position
+    type: number
+    length: 4
+    hint: For repeated (group) parameters - which repetition this value applies to.

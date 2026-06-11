@@ -1,0 +1,30 @@
+table: pas
+file: pas.dat
+title: TC alias values
+icd: 3.3.3.6.4
+row_label: "{PAS_NUMBR}: {PAS_ALTXT} = {PAS_ALVAL}"
+description: >
+  The state texts and raw values of the TC alias sets (paf), e.g.
+  "OFF" = 0, "ON" = 1.
+columns:
+  - name: PAS_NUMBR
+    label: Alias set
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    fk: paf.PAF_NUMBR
+    hint: The paf alias set this entry belongs to.
+  - name: PAS_ALTXT
+    label: State text
+    type: char
+    length: 16
+    mandatory: true
+    hint: Text the operator selects, e.g. "ON".
+  - name: PAS_ALVAL
+    label: Raw value
+    type: char
+    length: 17
+    key: true
+    mandatory: true
+    hint: Raw value encoded when this state is selected (decimal).

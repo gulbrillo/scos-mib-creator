@@ -1,0 +1,12 @@
+.git
+.gitignore
+docs
+README.md
+LICENSE
+**/__pycache__
+**/.pytest_cache
+**/node_modules
+**/.venv
+**/*.db
+frontend/dist
+.env

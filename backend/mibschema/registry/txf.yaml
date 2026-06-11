@@ -1,0 +1,41 @@
+table: txf
+file: txf.dat
+title: Textual calibrations
+icd: 3.3.2.2.4
+row_label: "{TXF_NUMBR}"
+description: >
+  Textual (status) calibrations map raw number ranges to state texts, e.g.
+  0 = "OFF", 1 = "ON", 2 = "STANDBY". Assign them to status parameters
+  (PCF_CATEG = S) via PCF_CURTX. The texts themselves are defined in txp.
+columns:
+  - name: TXF_NUMBR
+    label: Calibration name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique identifier, referenced from PCF_CURTX.
+  - name: TXF_DESCR
+    label: Description
+    type: char
+    length: 32
+    hint: e.g. "Generic ON/OFF status".
+  - name: TXF_RAWFMT
+    label: Raw format
+    type: char
+    length: 1
+    mandatory: true
+    default: "U"
+    enum:
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+    hint: Format of the raw range values in txp (normally unsigned).
+  - name: TXF_NALIAS
+    label: Number of texts
+    type: number
+    length: 3
+    hint: Number of txp records for this calibration. Kept in sync automatically.

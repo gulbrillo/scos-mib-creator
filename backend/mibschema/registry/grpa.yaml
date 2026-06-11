@@ -1,0 +1,24 @@
+table: grpa
+file: grpa.dat
+title: Group members (parameters)
+icd: 3.3.2.6.2
+row_label: "{GRPA_GNAME}: {GRPA_PANAME}"
+description: >
+  Parameters belonging to each parameter group (grp, type PA).
+columns:
+  - name: GRPA_GNAME
+    label: Group
+    type: char
+    length: 14
+    key: true
+    mandatory: true
+    fk: grp.GRP_NAME
+    hint: The parameter group.
+  - name: GRPA_PANAME
+    label: Parameter
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: The monitoring parameter in this group.

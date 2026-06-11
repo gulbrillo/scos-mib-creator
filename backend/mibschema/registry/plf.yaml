@@ -1,0 +1,67 @@
+table: plf
+file: plf.dat
+title: Parameter locations (fixed packets)
+icd: 3.3.2.5.1
+row_label: "{PLF_NAME} @ {PLF_SPID}+{PLF_OFFBY}.{PLF_OFFBI}"
+description: >
+  Places monitoring parameters into fixed telemetry packets: "parameter X
+  starts at byte B, bit b of packet SPID". Byte offsets are counted from the
+  very first byte of the packet (CCSDS header included). The packet layout
+  editor maintains this table visually.
+columns:
+  - name: PLF_NAME
+    label: Parameter
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: The monitoring parameter located here.
+  - name: PLF_SPID
+    label: Packet (SPID)
+    type: number
+    length: 10
+    key: true
+    mandatory: true
+    fk: pid.PID_SPID
+    hint: The fixed packet containing the parameter.
+  - name: PLF_OFFBY
+    label: Byte offset
+    type: number
+    length: 5
+    mandatory: true
+    hint: Byte position of the first occurrence, counted from the start of the packet (header included).
+    help: >
+      Offset 0 is the first byte of the CCSDS primary header. The first byte
+      after a 6-byte primary header and e.g. a 10-byte PUS secondary header is
+      offset 16. The visual layout editor computes this for you.
+  - name: PLF_OFFBI
+    label: Bit offset
+    type: number
+    length: 1
+    mandatory: true
+    default: "0"
+    hint: Bit within the byte (0 = most significant bit) where the value starts.
+  - name: PLF_NBOCC
+    label: Occurrences
+    type: number
+    length: 4
+    default: "1"
+    hint: How many times the parameter repeats in this packet (supercommutation). Normally 1.
+  - name: PLF_LGOCC
+    label: Bits between occurrences
+    type: number
+    length: 5
+    hint: For repeated parameters - distance in bits between the starts of two consecutive occurrences.
+  - name: PLF_TIME
+    label: First occurrence time offset (ms)
+    type: number
+    length: 9
+    signed: true
+    hint: Time offset of the first occurrence relative to the packet time stamp (supercommutation).
+  - name: PLF_TDOCC
+    label: Time between occurrences (ms)
+    type: number
+    length: 9
+    default: "1"
+    hint: Time delay between consecutive occurrences (supercommutated parameters); must be > 0.

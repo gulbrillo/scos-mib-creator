@@ -1,0 +1,204 @@
+table: ccf
+file: ccf.dat
+title: Commands
+icd: 3.3.3.2.1
+row_label: "{CCF_CNAME}: {CCF_DESCR}"
+description: >
+  One record per telecommand your unit accepts. The command's arguments are
+  typed in cpc and laid out into the packet body in cdf. Use the command
+  wizard to create all three consistently.
+columns:
+  - name: CCF_CNAME
+    label: Command name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique mnemonic of the command, max 8 characters (e.g. "XYZMODE").
+  - name: CCF_DESCR
+    label: Description
+    type: char
+    length: 24
+    mandatory: true
+    hint: Short description shown to operators, e.g. "Set instrument mode".
+  - name: CCF_DESCR2
+    label: Detailed description
+    type: char
+    length: 64
+    hint: Longer free-text description.
+  - name: CCF_CTYPE
+    label: Command type
+    type: char
+    length: 8
+    enum_strict: false
+    enum:
+      - value: ""
+        label: Normal command packet
+      - value: "R"
+        label: Reset MAP command (control segment)
+      - value: "F"
+        label: Control frame (BC frame, Unlock / Set V(R))
+      - value: "S"
+        label: Packet without CRC
+      - value: "N"
+        label: NIS throw event
+    hint: Leave empty for normal spacecraft command packets.
+    help: >
+      Special command types are used for low-level link control and ground
+      directives. Unit/instrument commands are normal packets - leave this
+      field empty.
+  - name: CCF_CRITICAL
+    label: Critical (hazardous)
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+        help: The control system asks for an extra confirmation before releasing this command.
+      - value: "N"
+        label: "No"
+    hint: Mark commands with potentially hazardous effects - operators must confirm twice.
+  - name: CCF_PKTID
+    label: Packet header
+    type: char
+    length: 8
+    mandatory: true
+    fk: tcp.TCP_ID
+    hint: The TC packet header (tcp) used to build this command's packet.
+  - name: CCF_TYPE
+    label: PUS service type
+    type: number
+    length: 3
+    hint: PUS service of the command, e.g. 8 for "perform function".
+  - name: CCF_STYPE
+    label: PUS subtype
+    type: number
+    length: 3
+    hint: PUS subtype, e.g. 1 for (8,1) perform function.
+  - name: CCF_APID
+    label: APID
+    type: number
+    length: 5
+    hint: APID of the on-board application that executes this command.
+  - name: CCF_NPARS
+    label: Number of elements
+    type: number
+    length: 3
+    hint: Number of cdf elements of this command. Kept in sync automatically.
+  - name: CCF_PLAN
+    label: Plannable by
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "A"
+        label: All sources
+      - value: "F"
+        label: Flight dynamics only
+      - value: "S"
+        label: SOC only
+      - value: "N"
+        label: Not plannable
+    hint: Which mission planning sources may reference this command. "N" is fine for unit-level testing.
+  - name: CCF_EXEC
+    label: Stand-alone loadable
+    type: char
+    length: 1
+    default: "Y"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+        help: Command may only be used inside sequences, not loaded directly on a stack.
+    hint: Whether operators may load this command directly onto a command stack.
+  - name: CCF_ILSCOPE
+    label: Interlock scope
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "N"
+        label: No interlock
+      - value: "G"
+        label: Global
+        help: Blocks all further commanding until the verification stage is reached.
+      - value: "L"
+        label: Local source
+        help: Blocks further commanding from the same source.
+      - value: "S"
+        label: Subsystem (local)
+        help: Blocks commanding to the same subsystem from the local source.
+      - value: "B"
+        label: Subsystem (global)
+      - value: "F"
+        label: Local source, fail only
+      - value: "T"
+        label: Subsystem local, fail only
+    hint: Advanced - hold subsequent commands until this one is verified. "N" = no interlock.
+  - name: CCF_ILSTAGE
+    label: Interlock stage
+    type: char
+    length: 1
+    default: "C"
+    enum:
+      - value: "R"
+        label: Ground station reception
+      - value: "U"
+        label: Uplink
+      - value: "O"
+        label: On-board acceptance
+      - value: "A"
+        label: Application acceptance
+      - value: "C"
+        label: Completion
+    hint: Verification stage an interlock waits for (only relevant if interlock scope is not N).
+  - name: CCF_SUBSYS
+    label: Subsystem number
+    type: number
+    length: 3
+    hint: Optional numeric subsystem ID used by interlocks and filters.
+  - name: CCF_HIPRI
+    label: High priority
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+        help: Command is sent via the high-priority (CPDU) route.
+      - value: "N"
+        label: "No"
+    hint: Only for hardware/CPDU commands - normally N.
+  - name: CCF_MAPID
+    label: MAP ID
+    type: number
+    length: 2
+    hint: MAP ID for high-priority commands (empty otherwise).
+  - name: CCF_DEFSET
+    label: Default parameter value set
+    type: char
+    length: 8
+    fk: psv.PSV_PVSID
+    hint: Optional - a named value set (psv) loaded as defaults for this command.
+  - name: CCF_RAPID
+    label: Redundant APID
+    type: number
+    length: 5
+    hint: APID of the redundant on-board application, if your unit has one.
+  - name: CCF_ACK
+    label: Acknowledgement flags
+    type: number
+    length: 2
+    hint: "PUS acknowledgement flags requested from the on-board software: sum of 1 (acceptance), 2 (start), 4 (progress), 8 (completion). E.g. 9 = acceptance + completion."
+    help: >
+      These flags tell the on-board software which service-1 verification
+      reports to send back for this command. 0 = none, 1 = acceptance only,
+      9 = acceptance + completion (a common choice), 15 = all stages. Your
+      verification settings (cvs/cvp) should match what is requested here.
+  - name: CCF_SUBSCHEDID
+    label: Sub-schedule ID
+    type: number
+    length: 5
+    hint: Default on-board sub-schedule for time-tagged loading (mission-specific; usually empty).

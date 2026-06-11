@@ -1,0 +1,108 @@
+# Editor domains: how tables are grouped and ordered in the UI.
+# The table order here also fixes the (deterministic) export order.
+domains:
+  - id: project
+    title: Project & database
+    icon: pi-cog
+    description: >
+      Global information about this MIB database: its version record. Exactly
+      one vdf record should exist.
+    tables: [vdf]
+
+  - id: tm-parameters
+    title: TM parameters
+    icon: pi-chart-line
+    description: >
+      Every value your unit reports in telemetry (a voltage, a temperature, a
+      status flag, a counter) is a "monitoring parameter". Define parameters
+      here first, then place them into packets.
+    tables: [pcf, cur]
+
+  - id: tm-calibrations
+    title: TM calibrations
+    icon: pi-sliders-h
+    description: >
+      Calibrations convert raw downlinked numbers into engineering values:
+      point-pair interpolation (caf/cap), polynomials (mcf), logarithms (lgf)
+      or status texts like ON/OFF (txf/txp).
+    tables: [caf, cap, txf, txp, mcf, lgf]
+
+  - id: tm-monitoring
+    title: TM limit checks
+    icon: pi-exclamation-triangle
+    description: >
+      Out-of-limit monitoring: which parameter values are nominal, and what
+      should be flagged. One ocf record per checked parameter, with the actual
+      limits in ocp.
+    tables: [ocf, ocp]
+
+  - id: tm-packets
+    title: TM packets
+    icon: pi-inbox
+    description: >
+      Telemetry packets your unit sends: identification (pid/pic), overall
+      characteristics (tpcf) and the layout that places parameters into the
+      packet body (plf for fixed packets, vpd for variable packets).
+    tables: [pid, pic, tpcf, plf, vpd]
+
+  - id: tc-headers
+    title: TC packet headers
+    icon: pi-box
+    description: >
+      The structure of the telecommand packet header(s) used to build command
+      packets: header characteristics (tcp), header parameters (pcpc) and the
+      bit-level header layout (pcdf). Typically defined once per mission and
+      reused by every command.
+    tables: [tcp, pcpc, pcdf]
+
+  - id: tc-commands
+    title: TC commands
+    icon: pi-send
+    description: >
+      Telecommands your unit accepts: the command itself (ccf), its argument
+      types (cpc), the bit-level layout of arguments in the packet body (cdf),
+      pre-transmission validation conditions (ptv) and APID routing (dst).
+    tables: [ccf, cpc, cdf, ptv, dst]
+
+  - id: tc-calibrations
+    title: TC calibrations & ranges
+    icon: pi-arrows-h
+    description: >
+      For command arguments: numeric de-calibration curves (cca/ccs) and text
+      aliases (paf/pas) let operators enter engineering values; range sets
+      (prf/prv) restrict what values are accepted.
+    tables: [cca, ccs, paf, pas, prf, prv]
+
+  - id: tc-verification
+    title: TC verification
+    icon: pi-check-circle
+    description: >
+      How the ground verifies that a command worked: verification stages (cvs),
+      the telemetry conditions that prove success (cve) and the assignment of
+      stages to commands (cvp).
+    tables: [cvs, cve, cvp]
+
+  - id: tc-sequences
+    title: TC sequences
+    icon: pi-list
+    description: >
+      Pre-defined series of commands released together: sequence header (csf),
+      elements (css), element parameter values (sdf) and sequence-level formal
+      parameters (csp).
+    tables: [csf, css, sdf, csp]
+
+  - id: tc-paramsets
+    title: TC parameter sets
+    icon: pi-clone
+    description: >
+      Optional, advanced: named sets of command parameter values that operators
+      can load as a group (pst/psv/cps/pvs/psm).
+    tables: [pst, psv, cps, pvs, psm]
+
+  - id: groups
+    title: Groups
+    icon: pi-folder
+    description: >
+      Optional grouping of parameters and packets, e.g. for retrieval domains
+      (grp/grpa/grpk).
+    tables: [grp, grpa, grpk]

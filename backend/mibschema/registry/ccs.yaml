@@ -1,0 +1,30 @@
+table: ccs
+file: ccs.dat
+title: TC de-calibration points
+icd: 3.3.3.6.2
+row_label: "{CCS_NUMBR}: {CCS_XVALS} -> {CCS_YVALS}"
+description: >
+  The points of the TC de-calibration curves (cca). Note the direction:
+  X = engineering value entered by the operator, Y = raw value sent on-board.
+columns:
+  - name: CCS_NUMBR
+    label: Curve name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    fk: cca.CCA_NUMBR
+    hint: The cca curve this point belongs to.
+  - name: CCS_XVALS
+    label: Engineering value
+    type: char
+    length: 17
+    mandatory: true
+    hint: Engineering value of this point (in the cca engineering format).
+  - name: CCS_YVALS
+    label: Raw value
+    type: char
+    length: 17
+    key: true
+    mandatory: true
+    hint: Raw on-board value this engineering value maps to.

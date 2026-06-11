@@ -1,0 +1,73 @@
+table: ocp
+file: ocp.dat
+title: Limit check values
+icd: 3.3.2.3.2
+row_label: "{OCP_NAME} #{OCP_POS}"
+description: >
+  The actual limit / expected-state definitions for the parameters listed in
+  ocf. Several records per parameter allow e.g. soft and hard limits, or
+  different limits depending on an applicability condition (mode).
+columns:
+  - name: OCP_NAME
+    label: Parameter
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: ocf.OCF_NAME
+    hint: The checked parameter (must have an ocf record).
+  - name: OCP_POS
+    label: Position
+    type: number
+    length: 2
+    key: true
+    mandatory: true
+    hint: Order of this check (1, 2, ...). Soft limits must come before hard limits.
+  - name: OCP_TYPE
+    label: Check type
+    type: char
+    length: 1
+    mandatory: true
+    default: "S"
+    enum:
+      - value: "S"
+        label: Soft limit / expected state
+        help: Violation raises a warning (yellow). For status parameters this defines the expected state.
+      - value: "H"
+        label: Hard limit
+        help: Violation raises an alarm (red).
+      - value: "D"
+        label: Delta check
+        help: Checks the change between consecutive samples instead of the value itself.
+      - value: "C"
+        label: Status consistency
+        help: Checks the parameter against the last commanded state (requires PCF_USCON=Y).
+      - value: "E"
+        label: Event only
+        help: Generates an event when the value enters the range, without out-of-limit state.
+    hint: Severity/kind of this check.
+  - name: OCP_LVALU
+    label: Low limit / expected value
+    type: char
+    length: 14
+    hint: Low limit (numeric checks) or the expected state text (status checks).
+    help: >
+      For numeric limits - the lowest acceptable value; values below it violate
+      the check. For status parameters (ocf format A) - the expected state text.
+      May be left empty for delta checks without minimum.
+  - name: OCP_HVALU
+    label: High limit
+    type: char
+    length: 14
+    hint: High limit; values above it violate the check. Empty for status checks.
+  - name: OCP_RLCHK
+    label: Applicability parameter
+    type: char
+    length: 8
+    fk: pcf.PCF_NAME
+    hint: Optional - this check only applies while another parameter has a given value (e.g. only in mode X).
+  - name: OCP_VALPAR
+    label: Applicability value
+    type: number
+    length: 5
+    hint: Raw value the applicability parameter must have for this check to apply.

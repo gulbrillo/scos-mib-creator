@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Local scratch
+*.local

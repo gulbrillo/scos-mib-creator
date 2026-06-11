@@ -1,0 +1,24 @@
+table: grpk
+file: grpk.dat
+title: Group members (packets)
+icd: 3.3.2.6.3
+row_label: "{GRPK_GNAME}: {GRPK_PKSPID}"
+description: >
+  Packets belonging to each packet group (grp, type PK).
+columns:
+  - name: GRPK_GNAME
+    label: Group
+    type: char
+    length: 14
+    key: true
+    mandatory: true
+    fk: grp.GRP_NAME
+    hint: The packet group.
+  - name: GRPK_PKSPID
+    label: Packet (SPID)
+    type: number
+    length: 10
+    key: true
+    mandatory: true
+    fk: pid.PID_SPID
+    hint: The packet in this group.

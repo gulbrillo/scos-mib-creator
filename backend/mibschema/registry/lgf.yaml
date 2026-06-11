@@ -1,0 +1,47 @@
+table: lgf
+file: lgf.dat
+title: Logarithmic calibrations
+icd: 3.3.2.2.7
+row_label: "{LGF_IDENT}"
+description: >
+  Logarithmic calibrations convert raw to engineering values with
+  eng = 1 / (A0 + A1*ln(raw) + A2*ln(raw)^2 + A3*ln(raw)^3 + A4*ln(raw)^4).
+  Typically used for thermistors (Steinhart-Hart equation).
+columns:
+  - name: LGF_IDENT
+    label: Calibration name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique identifier, referenced from PCF_CURTX.
+  - name: LGF_DESCR
+    label: Description
+    type: char
+    length: 32
+  - name: LGF_POL1
+    label: A0
+    type: char
+    length: 14
+    mandatory: true
+    hint: Constant coefficient.
+  - name: LGF_POL2
+    label: A1
+    type: char
+    length: 14
+    hint: 1st-order coefficient. Empty = 0.
+  - name: LGF_POL3
+    label: A2
+    type: char
+    length: 14
+    hint: 2nd-order coefficient. Empty = 0.
+  - name: LGF_POL4
+    label: A3
+    type: char
+    length: 14
+    hint: 3rd-order coefficient. Empty = 0.
+  - name: LGF_POL5
+    label: A4
+    type: char
+    length: 14
+    hint: 4th-order coefficient. Empty = 0.

@@ -1,0 +1,65 @@
+table: pic
+file: pic.dat
+title: Packet identification criteria
+icd: 3.3.2.4.2
+row_label: "type {PIC_TYPE}/{PIC_STYPE}"
+description: >
+  Tells the ground where to find the additional identification fields (PI1/PI2)
+  inside packets of a given PUS type/subtype - e.g. "for (3,25) packets the SID
+  is a 16-bit field at byte offset 16". Needed whenever pid records use PI1/PI2
+  values.
+columns:
+  - name: PIC_TYPE
+    label: PUS service type
+    type: number
+    length: 3
+    key: true
+    mandatory: true
+    hint: Service type this criteria applies to (e.g. 3).
+  - name: PIC_STYPE
+    label: PUS subtype
+    type: number
+    length: 3
+    key: true
+    mandatory: true
+    hint: Subtype this criteria applies to (e.g. 25).
+  - name: PIC_PI1_OFF
+    label: PI1 byte offset
+    type: number
+    length: 5
+    mandatory: true
+    signed: true
+    default: "-1"
+    hint: Byte offset of the first identification field from the start of the packet; -1 = no PI1 field.
+    help: >
+      Counted from the very first byte of the packet (CCSDS header included).
+      For a classic PUS layout the first field after the secondary header is at
+      6 + (data field header size). Example - 6-byte primary header + 10-byte
+      PUS header = offset 16. Set to -1 if packets of this type need no PI1.
+  - name: PIC_PI1_WID
+    label: PI1 width (bits)
+    type: number
+    length: 3
+    mandatory: true
+    default: "0"
+    hint: Width of the PI1 field in bits (e.g. 16 for a 16-bit SID). 0 if unused.
+  - name: PIC_PI2_OFF
+    label: PI2 byte offset
+    type: number
+    length: 5
+    mandatory: true
+    signed: true
+    default: "-1"
+    hint: Byte offset of the second identification field; -1 = no PI2 field.
+  - name: PIC_PI2_WID
+    label: PI2 width (bits)
+    type: number
+    length: 3
+    mandatory: true
+    default: "0"
+    hint: Width of the PI2 field in bits. 0 if unused.
+  - name: PIC_APID
+    label: APID (optional)
+    type: number
+    length: 5
+    hint: Restrict this criteria to one APID. Empty = applies to all APIDs with this type/subtype.

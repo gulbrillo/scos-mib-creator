@@ -1,0 +1,36 @@
+table: psm
+file: psm.dat
+title: Parameter set assignments
+icd: 3.3.3.5.5
+row_label: "{PSM_NAME} -> {PSM_PARSET}"
+description: >
+  Advanced/optional: assigns parameter sets (pst) to commands or sequences.
+columns:
+  - name: PSM_NAME
+    label: Command / sequence
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Name of the command (ccf) or sequence (csf).
+  - name: PSM_TYPE
+    label: Task type
+    type: char
+    length: 1
+    key: true
+    mandatory: true
+    default: "C"
+    enum:
+      - value: "C"
+        label: Command
+      - value: "S"
+        label: Sequence
+    hint: Whether the name refers to a command or a sequence.
+  - name: PSM_PARSET
+    label: Parameter set
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pst.PST_NAME
+    hint: The parameter set assigned to the task.

@@ -1,0 +1,34 @@
+table: pcpc
+file: pcpc.dat
+title: TC header parameters
+icd: 3.3.3.1.2
+row_label: "{PCPC_PNAME}"
+description: >
+  The parameters that can appear inside TC packet headers (pcdf), e.g. APID,
+  service type, subtype, ack flags. Values are filled automatically from each
+  command's ccf record at packet-building time.
+columns:
+  - name: PCPC_PNAME
+    label: Parameter name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique name of the header parameter, e.g. "APID".
+  - name: PCPC_DESC
+    label: Description
+    type: char
+    length: 24
+    mandatory: true
+    hint: e.g. "Application process ID".
+  - name: PCPC_CODE
+    label: Value coding
+    type: char
+    length: 1
+    default: "U"
+    enum:
+      - value: "U"
+        label: Unsigned integer
+      - value: "I"
+        label: Signed integer
+    hint: How values for this header parameter are encoded.

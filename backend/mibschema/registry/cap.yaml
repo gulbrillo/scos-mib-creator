@@ -1,0 +1,31 @@
+table: cap
+file: cap.dat
+title: Numerical calibration points
+icd: 3.3.2.2.3
+row_label: "{CAP_NUMBR}: {CAP_XVALS} -> {CAP_YVALS}"
+description: >
+  The points of the numerical calibration curves defined in caf. Points must be
+  entered in increasing raw-value order; SCOS-2000 interpolates linearly
+  between them.
+columns:
+  - name: CAP_NUMBR
+    label: Calibration name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    fk: caf.CAF_NUMBR
+    hint: The caf curve this point belongs to.
+  - name: CAP_XVALS
+    label: Raw value
+    type: char
+    length: 14
+    key: true
+    mandatory: true
+    hint: Raw (downlinked) value of this point, in the caf raw format/radix.
+  - name: CAP_YVALS
+    label: Engineering value
+    type: char
+    length: 14
+    mandatory: true
+    hint: Engineering value this raw value maps to.

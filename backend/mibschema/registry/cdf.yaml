@@ -1,0 +1,99 @@
+table: cdf
+file: cdf.dat
+title: Command layout (elements)
+icd: 3.3.3.2.3
+row_label: "{CDF_CNAME} @ bit {CDF_BIT}"
+description: >
+  The bit-level layout of each command's application data: which parameters
+  (cpc) and fixed areas appear at which bit offset after the packet header.
+  The command wizard computes offsets automatically from the parameter types.
+columns:
+  - name: CDF_CNAME
+    label: Command
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: ccf.CCF_CNAME
+    hint: The command (ccf) this element belongs to.
+  - name: CDF_ELTYPE
+    label: Element type
+    type: char
+    length: 1
+    mandatory: true
+    default: "E"
+    enum:
+      - value: "A"
+        label: Fixed area
+        help: A constant value baked into the packet (e.g. a function ID). Not visible to operators.
+      - value: "F"
+        label: Fixed parameter
+        help: A parameter with a fixed, non-editable value (visible but locked).
+      - value: "E"
+        label: Editable parameter
+        help: A parameter whose value the operator enters when preparing the command.
+    hint: Fixed constant, locked parameter, or operator-editable parameter.
+  - name: CDF_DESCR
+    label: Description
+    type: char
+    length: 24
+    hint: Label for fixed areas (parameters take their description from cpc).
+  - name: CDF_ELLEN
+    label: Length (bits)
+    type: number
+    length: 4
+    mandatory: true
+    hint: Width of this element in bits (for parameters - the width implied by their PTC/PFC).
+  - name: CDF_BIT
+    label: Bit offset
+    type: number
+    length: 4
+    key: true
+    mandatory: true
+    hint: Bit position relative to the end of the packet header (first application-data bit = 0).
+  - name: CDF_GRPSIZE
+    label: Group size
+    type: number
+    length: 2
+    key: true
+    hint: If this element is a repeat counter - number of following elements repeated per count. Empty/0 otherwise.
+    help: >
+      Set on a counter parameter to define repeating argument blocks: the next
+      "group size" elements repeat as many times as the counter's value. Leave
+      empty for normal flat commands.
+  - name: CDF_PNAME
+    label: Parameter
+    type: char
+    length: 8
+    fk: cpc.CPC_PNAME
+    hint: The command parameter (cpc) carried by this element. Empty for fixed areas.
+  - name: CDF_INTER
+    label: Value representation
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Raw
+        help: The value below is the raw (encoded) value.
+      - value: "E"
+        label: Engineering
+        help: The value below is an engineering value, converted via the parameter's calibration.
+      - value: "D"
+        label: Parameter default
+        help: Take the default from the cpc record (CPC_DEFVAL).
+      - value: "T"
+        label: Dynamic from TM
+        help: Take the value from the current value of the TM parameter named in "TM parameter".
+    hint: How the element's value below is interpreted.
+  - name: CDF_VALUE
+    label: Value
+    type: char
+    length: 17
+    hint: Constant value (fixed area), fixed/default value (parameters). Empty = operator must enter one.
+  - name: CDF_TMID
+    label: TM parameter
+    type: char
+    length: 8
+    fk: pcf.PCF_NAME
+    hint: Only for representation "T" - the monitoring parameter providing the dynamic default.

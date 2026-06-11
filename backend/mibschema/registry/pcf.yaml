@@ -1,0 +1,246 @@
+table: pcf
+file: pcf.dat
+title: Monitoring parameters
+icd: 3.3.2.1.1
+row_label: "{PCF_NAME}"
+description: >
+  One record per telemetry (monitoring) parameter — every value your unit
+  reports: voltages, temperatures, counters, status flags. This is usually the
+  first table you fill. After defining a parameter here, place it into a packet
+  (plf/vpd) so the ground knows where to find it.
+columns:
+  - name: PCF_NAME
+    label: Parameter name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique mnemonic, max 8 characters (e.g. "PWRV01").
+    help: >
+      Unique alphanumeric identifier of the parameter, used everywhere else in
+      the MIB. Many missions use a naming convention like <unit><type><number>
+      (e.g. XYZT0001 for temperature 1 of unit XYZ) — check whether your
+      project prescribes one. Must not start with "VAR", "GVAR" or "$"
+      (reserved by the SCOS-2000 OL expression language).
+  - name: PCF_DESCR
+    label: Description
+    type: char
+    length: 24
+    hint: Short human-readable description shown in displays.
+  - name: PCF_PID
+    label: On-board parameter ID
+    type: number
+    length: 10
+    hint: Numeric ID the on-board software uses for this parameter (PUS service 20); leave empty if none.
+    help: >
+      Only needed if your unit reports or accepts parameters by numeric ID
+      (e.g. PUS service 20, or "deduced" parameters in variable packets). Must
+      then be unique across all parameters. Leave empty for parameters that
+      only appear at fixed positions in packets.
+  - name: PCF_UNIT
+    label: Engineering unit
+    type: char
+    length: 4
+    hint: Unit shown next to calibrated values, e.g. "V", "degC", "mA".
+  - name: PCF_PTC
+    label: Parameter type (PTC)
+    type: number
+    length: 2
+    mandatory: true
+    hint: Parameter Type Code — what kind of value this is. Use the type picker if unsure.
+    help: >
+      The PTC selects the value kind: 1=boolean, 2=enumerated state, 3=unsigned
+      integer, 4=signed integer, 5=real, 6=bit string, 7=octet string, 8=ASCII
+      text, 9=absolute time, 10=relative time, 11=deduced, 13=saved synthetic.
+      Together with the PFC below it defines exactly how many bits the value
+      occupies and how it is decoded. The built-in type picker translates plain
+      descriptions ("unsigned 16-bit integer") into the right PTC/PFC pair.
+  - name: PCF_PFC
+    label: Parameter format (PFC)
+    type: number
+    length: 5
+    mandatory: true
+    hint: Parameter Format Code — the size/encoding variant of the chosen PTC.
+    help: >
+      Meaning depends on the PTC. Examples — unsigned/signed integers (PTC 3/4):
+      PFC 4 = 8 bits, 12 = 16 bits, 14 = 32 bits; reals (PTC 5): PFC 1 = IEEE
+      single, 2 = IEEE double; enumerated (PTC 2): PFC = number of bits. See the
+      type picker or Appendix A of the ICD for the full matrix.
+  - name: PCF_WIDTH
+    label: Padded width (bits)
+    type: number
+    length: 6
+    hint: Only for variable packets (vpd) when the slot is wider than the value itself; else leave empty.
+    help: >
+      Used by the variable-packet (vpd) extraction to know where the next
+      parameter starts when a value is padded (e.g. byte-aligned). Not used for
+      fixed packets (plf) — there the PTC/PFC pair determines the width.
+  - name: PCF_VALID
+    label: Validity parameter
+    type: char
+    length: 8
+    fk: pcf.PCF_NAME
+    hint: Optional - another parameter that decides whether this one is currently valid.
+    help: >
+      Example - a sensor reading is only meaningful while the instrument is ON;
+      point this at the mode parameter and set "Validity value" to the raw value
+      that means ON. Leave empty if the parameter is always valid.
+  - name: PCF_RELATED
+    label: Related parameter
+    type: char
+    length: 8
+    fk: pcf.PCF_NAME
+    hint: Only for deduced (PTC 11) or saved synthetic (nature S) parameters.
+    help: >
+      For "deduced" parameters (PTC=11) this names the preceding parameter that
+      carries the on-board parameter ID. For saved synthetic parameters it names
+      the synthetic parameter whose value is archived. Otherwise leave empty.
+  - name: PCF_CATEG
+    label: Category
+    type: char
+    length: 1
+    mandatory: true
+    default: "N"
+    enum:
+      - value: "N"
+        label: Numeric
+        help: Plain numeric value, optionally with a numeric calibration (caf/mcf/lgf).
+      - value: "S"
+        label: Status
+        help: Discrete state (e.g. OFF/ON). Should reference a textual calibration (txf) so operators see state names.
+      - value: "T"
+        label: Text
+        help: ASCII string parameter (PTC 8). No calibration allowed.
+    hint: How the value is presented - numeric, status (state names) or text.
+  - name: PCF_NATUR
+    label: Nature
+    type: char
+    length: 1
+    mandatory: true
+    default: "R"
+    enum:
+      - value: "R"
+        label: Raw telemetry
+        help: Extracted from a TM packet — the normal case for unit parameters.
+      - value: "D"
+        label: Dynamic synthetic (OL)
+        help: Computed on ground from other parameters with an OL expression.
+      - value: "P"
+        label: Synthetic (SPEL)
+        help: Computed on ground with a SPEL expression.
+      - value: "H"
+        label: Hard-coded synthetic
+        help: Computed by mission-specific ground software.
+      - value: "S"
+        label: Saved synthetic
+        help: Synthetic parameter whose values are archived (requires PTC=13 and Related parameter).
+      - value: "C"
+        label: Constant
+        help: Fixed value taken from "Default raw value" (PCF_PARVAL), not from telemetry.
+    hint: Where the value comes from - normally "R" (extracted from telemetry).
+  - name: PCF_CURTX
+    label: Calibration
+    type: char
+    length: 10
+    hint: Name of the calibration applied to this parameter (caf/mcf/lgf for numeric, txf for status).
+    help: >
+      Leave empty for uncalibrated parameters (raw value shown). For category N
+      it must name a numerical (caf), polynomial (mcf) or logarithmic (lgf)
+      calibration; for category S a textual calibration (txf). If different
+      calibrations apply depending on another parameter (e.g. gain state), leave
+      this empty and define the selection in the cur table instead.
+  - name: PCF_INTER
+    label: Out-of-range behaviour
+    type: char
+    length: 1
+    default: "F"
+    enum:
+      - value: "P"
+        label: Extrapolate
+        help: Values outside the calibration curve are extrapolated from the outermost segments.
+      - value: "F"
+        label: Flag invalid
+        help: Values outside the calibration curve render the parameter invalid (recommended).
+    hint: What to do when a raw value falls outside the calibration curve.
+  - name: PCF_USCON
+    label: Status consistency check
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+        help: Flag the parameter when its value differs from the last commanded state.
+      - value: "N"
+        label: "No"
+    hint: Advanced - check the parameter against the last commanded value.
+  - name: PCF_DECIM
+    label: Decimal places
+    type: number
+    length: 3
+    hint: Number of decimals shown for real values in displays (display only).
+  - name: PCF_PARVAL
+    label: Constant value
+    type: char
+    length: 14
+    hint: Only for nature "C" (constant) - the fixed raw value.
+  - name: PCF_SUBSYS
+    label: Subsystem
+    type: char
+    length: 8
+    hint: Optional free-text grouping label (e.g. your unit name).
+  - name: PCF_VALPAR
+    label: Validity value
+    type: number
+    length: 5
+    default: "1"
+    hint: Raw value the validity parameter must have for this parameter to be valid.
+  - name: PCF_SPTYPE
+    label: Synthetic output view
+    type: char
+    length: 1
+    enum:
+      - value: "E"
+        label: Engineering
+      - value: "R"
+        label: Raw
+    hint: Only for synthetic parameters - whether the expression result is an engineering or raw value.
+  - name: PCF_CORR
+    label: Time correlation
+    type: char
+    length: 1
+    default: "Y"
+    enum:
+      - value: "Y"
+        label: Apply
+        help: Convert on-board time values to ground (UTC) time using the mission time correlation.
+      - value: "N"
+        label: Do not apply
+    hint: Only for time parameters (PTC 9) - correlate on-board time to UTC?
+  - name: PCF_OBTID
+    label: On-board time ID
+    type: number
+    length: 5
+    hint: Advanced - which on-board clock this time parameter belongs to (empty = mission default).
+  - name: PCF_DARC
+    label: Archive in DARC
+    type: char
+    length: 1
+    enum:
+      - value: "0"
+        label: "No"
+      - value: "1"
+        label: "Yes"
+    hint: Advanced - include this parameter in the SCOS-2000 data archive subsystem.
+  - name: PCF_ENDIAN
+    label: Endianness
+    type: char
+    length: 1
+    enum:
+      - value: "B"
+        label: Big endian
+        help: Most significant byte first (the CCSDS/PUS default).
+      - value: "L"
+        label: Little endian
+        help: Least significant byte first. Only for byte-aligned integer parameters.
+    hint: Byte order for multi-byte integers (empty = big endian, the spacecraft default).

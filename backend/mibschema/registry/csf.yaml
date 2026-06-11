@@ -1,0 +1,121 @@
+table: csf
+file: csf.dat
+title: Command sequences
+icd: 3.3.3.3.1
+row_label: "{CSF_NAME}: {CSF_DESC}"
+description: >
+  A command sequence is a named, ordered set of commands (and nested
+  sequences) released as one unit - e.g. "instrument switch-on". The elements
+  live in css, their parameter values in sdf.
+columns:
+  - name: CSF_NAME
+    label: Sequence name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique mnemonic of the sequence, max 8 characters.
+  - name: CSF_DESC
+    label: Description
+    type: char
+    length: 24
+    mandatory: true
+    hint: e.g. "XYZ switch-on".
+  - name: CSF_DESC2
+    label: Detailed description
+    type: char
+    length: 64
+  - name: CSF_IFTT
+    label: Contains time-tagged commands
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "B"
+        label: Selectable at load time
+      - value: "N"
+        label: "No"
+    hint: Whether commands in this sequence are loaded into the on-board schedule (time-tagged).
+  - name: CSF_NFPARS
+    label: Number of formal parameters
+    type: number
+    length: 3
+    hint: Number of csp records. Kept in sync automatically.
+  - name: CSF_ELEMS
+    label: Number of elements
+    type: number
+    length: 5
+    hint: Number of css records. Kept in sync automatically.
+  - name: CSF_CRITICAL
+    label: Critical (hazardous)
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+    hint: Mark sequences with potentially hazardous effects.
+  - name: CSF_PLAN
+    label: Plannable by
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "A"
+        label: All sources
+      - value: "F"
+        label: Flight dynamics only
+      - value: "S"
+        label: SOC only
+      - value: "N"
+        label: Not plannable
+    hint: Which mission planning sources may reference this sequence.
+  - name: CSF_EXEC
+    label: Stand-alone loadable
+    type: char
+    length: 1
+    default: "Y"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+    hint: Whether the sequence can be loaded directly onto a stack.
+  - name: CSF_SUBSYS
+    label: Subsystem number
+    type: number
+    length: 3
+    hint: Optional numeric subsystem ID.
+  - name: CSF_GENTIME
+    label: Generation time
+    type: char
+    length: 17
+    hint: Optional bookkeeping - when the sequence was generated.
+  - name: CSF_DOCNAME
+    label: Source document
+    type: char
+    length: 32
+    hint: Optional bookkeeping - document the sequence comes from.
+  - name: CSF_ISSUE
+    label: Document issue
+    type: char
+    length: 10
+  - name: CSF_DATE
+    label: Document date
+    type: char
+    length: 17
+  - name: CSF_DEFSET
+    label: Default parameter value set
+    type: char
+    length: 8
+    fk: psv.PSV_PVSID
+    hint: Optional - a named value set (psv) loaded as defaults for this sequence.
+  - name: CSF_SUBSCHEDID
+    label: Sub-schedule ID
+    type: number
+    length: 5
+    hint: Default on-board sub-schedule for time-tagged loading (usually empty).

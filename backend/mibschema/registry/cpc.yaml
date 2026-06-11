@@ -1,0 +1,160 @@
+table: cpc
+file: cpc.dat
+title: Command parameters
+icd: 3.3.3.2.2
+row_label: "{CPC_PNAME}: {CPC_DESCR}"
+description: >
+  The typed arguments that commands can carry: name, type (PTC/PFC), unit,
+  optional default value, de-calibration and range checking. A parameter
+  defined here can be reused by several commands; the placement into each
+  command's packet happens in cdf.
+columns:
+  - name: CPC_PNAME
+    label: Parameter name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique name of the command parameter, max 8 characters.
+  - name: CPC_DESCR
+    label: Description
+    type: char
+    length: 24
+    hint: Shown to operators when editing the command, e.g. "Target mode".
+  - name: CPC_PTC
+    label: Parameter type (PTC)
+    type: number
+    length: 2
+    mandatory: true
+    hint: Parameter Type Code - what kind of value. Use the type picker if unsure.
+    help: >
+      Same type system as TM parameters: 1=boolean, 2=enumerated, 3=unsigned
+      integer, 4=signed integer, 5=real, 7=octet string, 8=ASCII text,
+      9=absolute time, 10=relative time, 11=deduced. The PFC picks the size.
+  - name: CPC_PFC
+    label: Parameter format (PFC)
+    type: number
+    length: 5
+    mandatory: true
+    hint: Size/encoding variant of the PTC (e.g. PTC 3 / PFC 12 = 16-bit unsigned integer).
+  - name: CPC_DISPFMT
+    label: Input/display format
+    type: char
+    length: 1
+    default: "U"
+    enum:
+      - value: "A"
+        label: ASCII
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+      - value: "T"
+        label: Absolute time
+      - value: "D"
+        label: Relative time
+    hint: Format in which operators enter/see the engineering value.
+  - name: CPC_RADIX
+    label: Raw radix
+    type: char
+    length: 1
+    default: "D"
+    enum:
+      - value: "D"
+        label: Decimal
+      - value: "H"
+        label: Hexadecimal
+      - value: "O"
+        label: Octal
+    hint: Default radix for the raw representation of unsigned values.
+  - name: CPC_UNIT
+    label: Engineering unit
+    type: char
+    length: 4
+    hint: Unit shown next to the value, e.g. "s", "mA".
+  - name: CPC_CATEG
+    label: Calibration category
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "N"
+        label: None
+        help: Value entered raw (no conversion).
+      - value: "C"
+        label: Numeric de-calibration
+        help: Operators enter engineering values converted via a cca/ccs curve. Requires "Numeric calibration" below.
+      - value: "T"
+        label: Textual (alias set)
+        help: Operators pick a named state (e.g. ON/OFF) defined in a paf/pas alias set. Requires "Alias set" below.
+      - value: "B"
+        label: Both (not supported by SCOS-2000)
+      - value: "A"
+        label: Command ID
+        help: Advanced - the value is the name of another command (used by e.g. on-board schedule management).
+      - value: "P"
+        label: Parameter ID
+        help: Advanced - the value is the name of a TM parameter; its on-board ID (PCF_PID) is encoded.
+    hint: How operator input is converted to the on-board raw value.
+  - name: CPC_PRFREF
+    label: Range set
+    type: char
+    length: 10
+    fk: prf.PRF_NUMBR
+    hint: Optional - range set (prf) restricting allowed values.
+  - name: CPC_CCAREF
+    label: Numeric calibration
+    type: char
+    length: 10
+    fk: cca.CCA_NUMBR
+    hint: De-calibration curve (cca) - required when category is C.
+  - name: CPC_PAFREF
+    label: Alias set
+    type: char
+    length: 10
+    fk: paf.PAF_NUMBR
+    hint: Textual alias set (paf) - required when category is T.
+  - name: CPC_INTER
+    label: Default value representation
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Raw
+      - value: "E"
+        label: Engineering
+    hint: Whether the default value below is written as a raw or engineering value.
+  - name: CPC_DEFVAL
+    label: Default value
+    type: char
+    length: 17
+    hint: Optional default for this parameter wherever it is used (can be overridden per command in cdf).
+  - name: CPC_CORR
+    label: Time correlation
+    type: char
+    length: 1
+    default: "Y"
+    enum:
+      - value: "Y"
+        label: Apply
+      - value: "N"
+        label: Do not apply
+    hint: Only for time parameters (PTC 9) - convert entered UTC to on-board time?
+  - name: CPC_OBTID
+    label: On-board time ID
+    type: number
+    length: 5
+    hint: Advanced - which on-board clock applies (empty = mission default).
+  - name: CPC_ENDIAN
+    label: Endianness
+    type: char
+    length: 1
+    enum:
+      - value: "B"
+        label: Big endian
+      - value: "L"
+        label: Little endian
+    hint: Byte order for byte-aligned integer parameters (empty = big endian).

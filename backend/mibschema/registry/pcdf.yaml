@@ -1,0 +1,88 @@
+table: pcdf
+file: pcdf.dat
+title: TC header layout
+icd: 3.3.3.1.3
+row_label: "{PCDF_TCNAME} @ bit {PCDF_BIT}"
+description: >
+  Bit-level layout of each TC packet header (tcp): which field sits at which
+  bit offset, and where its value comes from (fixed constant, or automatically
+  from the command definition - APID, type, subtype, ack flags). The standard
+  PUS header layout is created automatically for new projects.
+columns:
+  - name: PCDF_TCNAME
+    label: Header
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: tcp.TCP_ID
+    hint: The packet header (tcp) this element belongs to.
+  - name: PCDF_DESC
+    label: Description
+    type: char
+    length: 24
+    hint: Label of this header field, e.g. "Version number".
+  - name: PCDF_TYPE
+    label: Field type
+    type: char
+    length: 1
+    mandatory: true
+    default: "F"
+    enum:
+      - value: "F"
+        label: Fixed value
+        help: Constant value taken from the "Value" column.
+      - value: "A"
+        label: APID
+        help: Filled automatically from the command's CCF_APID.
+      - value: "T"
+        label: Service type
+        help: Filled automatically from CCF_TYPE.
+      - value: "S"
+        label: Service subtype
+        help: Filled automatically from CCF_STYPE.
+      - value: "K"
+        label: Ack flags
+        help: Filled automatically from CCF_ACK (or per-command override).
+      - value: "P"
+        label: System-set parameter
+        help: Filled at release time by the control system (e.g. sequence counter, packet length).
+    hint: Where this header field's value comes from.
+  - name: PCDF_LEN
+    label: Length (bits)
+    type: number
+    length: 4
+    mandatory: true
+    hint: Width of this header field in bits.
+  - name: PCDF_BIT
+    label: Bit offset
+    type: number
+    length: 4
+    key: true
+    mandatory: true
+    hint: Bit position of this field from the start of the packet (bit 0 = first bit).
+  - name: PCDF_PNAME
+    label: Header parameter
+    type: char
+    length: 8
+    fk: pcpc.PCPC_PNAME
+    hint: The pcpc parameter carried in this field (empty for fixed areas).
+  - name: PCDF_VALUE
+    label: Value
+    type: char
+    length: 10
+    mandatory: true
+    hint: Constant value for fixed areas; default value for parameter fields. Radix per "Value radix".
+  - name: PCDF_RADIX
+    label: Value radix
+    type: char
+    length: 1
+    default: "D"
+    enum:
+      - value: "D"
+        label: Decimal
+      - value: "H"
+        label: Hexadecimal
+      - value: "O"
+        label: Octal
+    hint: Radix in which "Value" is written.

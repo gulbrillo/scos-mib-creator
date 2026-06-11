@@ -1,0 +1,194 @@
+table: pid
+file: pid.dat
+title: TM packet identification
+icd: 3.3.2.4.1
+row_label: "SPID {PID_SPID}: {PID_DESCR}"
+description: >
+  One record per distinct telemetry packet your unit generates. A packet is
+  identified by APID + PUS type/subtype and - where several packets share those
+  (e.g. housekeeping reports with different SIDs) - by additional
+  identification values (PI1/PI2, located via the pic table). Each packet gets
+  a unique ground-side number, the SPID.
+columns:
+  - name: PID_TYPE
+    label: PUS service type
+    type: number
+    length: 3
+    key: true
+    mandatory: true
+    hint: PUS service of the packet, e.g. 3 for housekeeping, 5 for events.
+    help: >
+      The service type from the packet's PUS secondary header. Common values
+      for unit telemetry - 1: command verification, 3: housekeeping, 5: events,
+      17: connection test. See the PUS helper page for the full catalog.
+  - name: PID_STYPE
+    label: PUS subtype
+    type: number
+    length: 3
+    key: true
+    mandatory: true
+    hint: PUS subtype, e.g. 25 for a periodic housekeeping report (3,25).
+  - name: PID_APID
+    label: APID
+    type: number
+    length: 5
+    key: true
+    mandatory: true
+    hint: Application Process ID of your unit (0-2047), assigned by the system team.
+    help: >
+      The APID from the CCSDS packet header identifies the on-board application
+      that generated the packet. Your project/system team assigns APIDs - use
+      the value allocated to your unit.
+  - name: PID_PI1_VAL
+    label: PI1 value (e.g. SID)
+    type: number
+    length: 10
+    key: true
+    hint: Value of the first additional identification field, e.g. the housekeeping SID. Empty/0 if unused.
+    help: >
+      When several packets share APID/type/subtype (typical for housekeeping -
+      one (3,25) packet per SID), the ground distinguishes them by an extra
+      field inside the packet. Enter the value (e.g. SID = 1) here and describe
+      where the field sits in the packet in the pic table.
+  - name: PID_PI2_VAL
+    label: PI2 value
+    type: number
+    length: 10
+    key: true
+    hint: Value of the second additional identification field. Empty/0 if unused.
+  - name: PID_SPID
+    label: SPID (ground packet number)
+    type: number
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique ground-side packet ID (1...2^32-1). The wizard assigns these automatically.
+    help: >
+      The SCOS-2000 Packet ID is a purely ground-side number that uniquely
+      names this packet definition. It is referenced by tpcf, plf and grpk.
+      Any unique positive number works; keep a simple scheme (e.g. count up
+      from 1000).
+  - name: PID_DESCR
+    label: Description
+    type: char
+    length: 64
+    hint: Human-readable packet name, e.g. "XYZ standard HK report".
+  - name: PID_UNIT
+    label: On-board subsystem
+    type: char
+    length: 8
+    hint: Optional grouping label, e.g. your unit acronym.
+  - name: PID_TPSD
+    label: Variable structure ID (TPSD)
+    type: number
+    length: 10
+    signed: true
+    default: "-1"
+    hint: "-1 (or empty) = fixed packet decoded via plf. Set a unique ID to use the variable definition (vpd)."
+    help: >
+      Fixed packets (every parameter at a constant position) are described in
+      plf - leave this at -1. Packets whose layout varies (repeating groups,
+      deduced parameters) are described in vpd - set a unique Telemetry Packet
+      Structure Definition number here (convention: same value as the SPID).
+  - name: PID_DFHSIZE
+    label: Data field header size (bytes)
+    type: number
+    length: 2
+    mandatory: true
+    hint: Length of the PUS secondary header in the packet body, in bytes (mission-specific, often 10-16).
+    help: >
+      Number of bytes of the data field header (PUS secondary header, including
+      any spare/padding) at the start of the packet body. Parameter byte
+      offsets in plf are counted from the start of the full packet (header
+      included), but several tools use this value to locate the source data -
+      ask your system team for the mission value and use it consistently.
+  - name: PID_TIME
+    label: Time field present
+    type: char
+    length: 1
+    default: "Y"
+    enum:
+      - value: "Y"
+        label: "Yes"
+        help: The data field header contains the packet generation time (the normal PUS case).
+      - value: "N"
+        label: "No"
+    hint: Whether the packet carries a generation time stamp in its secondary header.
+  - name: PID_INTER
+    label: Generation interval (ms)
+    type: number
+    length: 8
+    hint: For periodic packets - the nominal generation period in milliseconds. Empty for sporadic packets.
+    help: >
+      Used by the ground to flag parameters as "expired" when a periodic packet
+      stops arriving. Set it to the configured housekeeping period (e.g. 8000
+      for 8 s); leave empty for event-driven packets.
+  - name: PID_VALID
+    label: Definition valid
+    type: char
+    length: 1
+    default: "Y"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+        help: Keeps the record in the database but disables processing of this packet.
+    hint: Set to N to temporarily disable this packet definition.
+  - name: PID_CHECK
+    label: CRC check
+    type: number
+    length: 1
+    default: "0"
+    enum:
+      - value: "0"
+        label: Do not check
+      - value: "1"
+        label: Check packet CRC
+        help: Verify the Packet Error Control (CRC) field on reception.
+    hint: Whether the ground verifies the packet CRC.
+  - name: PID_EVENT
+    label: Raise ground event
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "N"
+        label: "No"
+      - value: "I"
+        label: Info event
+      - value: "W"
+        label: Warning event
+      - value: "A"
+        label: Alarm event
+    hint: Generate a ground event whenever this packet arrives (useful for on-board anomaly reports).
+  - name: PID_EVID
+    label: Event ID text
+    type: char
+    length: 17
+    hint: Identifier used in the generated ground event (only if an event severity is selected).
+  - name: PID_PFIELD
+    label: OBT P-field override (CCS5)
+    type: char
+    length: 10
+    profiles: [ccs5]
+    hint: CCS5 extension - custom on-board time format code for this packet's time stamp. Leave empty for the mission default.
+    help: >
+      Terma CCS5 extension column (not part of the ESA ICD): overrides the
+      CUC/CDS time format (p-field) used to decode this specific packet's time
+      stamp. Only export with the CCS5 profile.
+  - name: PID_CORR
+    label: Time correlation (CCS5)
+    type: char
+    length: 1
+    profiles: [ccs5]
+    enum:
+      - value: "Y"
+        label: Apply
+      - value: "N"
+        label: Disable
+    hint: CCS5 extension - disable ground time correlation for this packet.
+    help: >
+      Terma CCS5 extension column (not part of the ESA ICD): set to N to take
+      this packet's time stamp as-is without applying the mission time
+      correlation. Only export with the CCS5 profile.

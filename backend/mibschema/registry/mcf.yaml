@@ -1,0 +1,47 @@
+table: mcf
+file: mcf.dat
+title: Polynomial calibrations
+icd: 3.3.2.2.6
+row_label: "{MCF_IDENT}"
+description: >
+  Polynomial calibrations convert raw to engineering values with
+  eng = A0 + A1*raw + A2*raw^2 + A3*raw^3 + A4*raw^4. Use when the sensor
+  characteristic is described analytically rather than by measured points.
+columns:
+  - name: MCF_IDENT
+    label: Calibration name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique identifier, referenced from PCF_CURTX.
+  - name: MCF_DESCR
+    label: Description
+    type: char
+    length: 32
+  - name: MCF_POL1
+    label: A0 (constant)
+    type: char
+    length: 14
+    mandatory: true
+    hint: Constant coefficient.
+  - name: MCF_POL2
+    label: A1 (linear)
+    type: char
+    length: 14
+    hint: 1st-order coefficient. Empty = 0.
+  - name: MCF_POL3
+    label: A2 (quadratic)
+    type: char
+    length: 14
+    hint: 2nd-order coefficient. Empty = 0.
+  - name: MCF_POL4
+    label: A3 (cubic)
+    type: char
+    length: 14
+    hint: 3rd-order coefficient. Empty = 0.
+  - name: MCF_POL5
+    label: A4 (quartic)
+    type: char
+    length: 14
+    hint: 4th-order coefficient. Empty = 0.

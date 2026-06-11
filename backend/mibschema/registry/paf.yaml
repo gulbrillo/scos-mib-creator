@@ -1,0 +1,40 @@
+table: paf
+file: paf.dat
+title: TC alias sets
+icd: 3.3.3.6.3
+row_label: "{PAF_NUMBR}"
+description: >
+  Textual de-calibrations ("alias sets") for command parameters: operators pick
+  a named state (e.g. "ON") and the corresponding raw value (pas) is encoded.
+  Referenced from CPC_PAFREF (category T parameters).
+columns:
+  - name: PAF_NUMBR
+    label: Alias set name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique identifier, referenced from CPC_PAFREF.
+  - name: PAF_DESCR
+    label: Description
+    type: char
+    length: 24
+    hint: e.g. "Generic ON/OFF".
+  - name: PAF_RAWFMT
+    label: Raw format
+    type: char
+    length: 1
+    default: "U"
+    enum:
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+    hint: Format of the raw values in pas.
+  - name: PAF_NALIAS
+    label: Number of aliases
+    type: number
+    length: 3
+    hint: Number of pas records for this set. Kept in sync automatically.

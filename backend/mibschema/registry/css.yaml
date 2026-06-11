@@ -1,0 +1,194 @@
+table: css
+file: css.dat
+title: Sequence elements
+icd: 3.3.3.3.2
+row_label: "{CSS_SQNAME} #{CSS_ENTRY}: {CSS_ELEMID}"
+description: >
+  The ordered elements of each command sequence (csf): commands, nested
+  sequences or comments, with optional relative release/execution timing.
+columns:
+  - name: CSS_SQNAME
+    label: Sequence
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: csf.CSF_NAME
+    hint: The sequence (csf) this element belongs to.
+  - name: CSS_COMM
+    label: Comment
+    type: char
+    length: 32
+    hint: Free comment shown with this element.
+  - name: CSS_ENTRY
+    label: Entry number
+    type: number
+    length: 5
+    key: true
+    mandatory: true
+    hint: Order of this element within the sequence (1, 2, 3, ...).
+  - name: CSS_TYPE
+    label: Element type
+    type: char
+    length: 1
+    mandatory: true
+    default: "C"
+    enum:
+      - value: "C"
+        label: Command
+      - value: "S"
+        label: Nested sequence
+      - value: "T"
+        label: Comment (not supported by SCOS-2000)
+      - value: "F"
+        label: Formal command parameter (future)
+      - value: "P"
+        label: Formal sequence parameter (future)
+    hint: What kind of element this entry is.
+  - name: CSS_ELEMID
+    label: Element
+    type: char
+    length: 8
+    hint: Name of the command (ccf) or sequence (csf) at this entry.
+  - name: CSS_NPARS
+    label: Editable parameters
+    type: number
+    length: 3
+    hint: Number of editable parameters of this element (informational).
+  - name: CSS_MANDISP
+    label: Manual dispatch
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+        help: Operator must dispatch this command explicitly.
+      - value: "N"
+        label: "No"
+    hint: Require explicit operator dispatch for this element.
+  - name: CSS_RELTYPE
+    label: Release time reference
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Relative to previous element
+      - value: "A"
+        label: Relative to sequence start
+    hint: How the release delta time below is interpreted.
+  - name: CSS_RELTIME
+    label: Release delta time
+    type: char
+    length: 8
+    hint: "Delta release time as hh:mm:ss (e.g. 00:00:05). Empty = immediately."
+  - name: CSS_EXTIME
+    label: Execution delta time
+    type: char
+    length: 17
+    hint: Delta execution time-tag for on-board scheduled elements. Empty for immediate execution.
+  - name: CSS_PREVREL
+    label: Execution time reference
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "R"
+        label: Relative to previous element
+      - value: "A"
+        label: Relative to sequence start
+    hint: How the execution delta time is interpreted.
+  - name: CSS_GROUP
+    label: Group marker
+    type: char
+    length: 1
+    enum:
+      - value: "S"
+        label: Start of group
+      - value: "M"
+        label: Middle of group
+      - value: "E"
+        label: End of group
+    hint: Optional grouping of consecutive elements (released together).
+  - name: CSS_BLOCK
+    label: Block marker
+    type: char
+    length: 1
+    enum:
+      - value: "S"
+        label: Start of block
+      - value: "M"
+        label: Middle of block
+      - value: "E"
+        label: End of block
+    hint: Optional blocking of consecutive elements (uplinked as one unit).
+  - name: CSS_ILSCOPE
+    label: Interlock scope
+    type: char
+    length: 1
+    enum:
+      - value: "G"
+        label: Global
+      - value: "L"
+        label: Local source
+      - value: "S"
+        label: Subsystem (local)
+      - value: "B"
+        label: Subsystem (global)
+      - value: "F"
+        label: Local source, fail only
+      - value: "T"
+        label: Subsystem local, fail only
+      - value: "N"
+        label: No interlock
+    hint: Override of the command's interlock for this element (empty = use command default).
+  - name: CSS_ILSTAGE
+    label: Interlock stage
+    type: char
+    length: 1
+    enum:
+      - value: "R"
+        label: Ground station reception
+      - value: "U"
+        label: Uplink
+      - value: "O"
+        label: On-board acceptance
+      - value: "A"
+        label: Application acceptance
+      - value: "C"
+        label: Completion
+    hint: Stage the interlock waits for (empty = command default).
+  - name: CSS_DYNPTV
+    label: Override dynamic PTV
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+    hint: Skip dynamic pre-transmission checks for this element.
+  - name: CSS_STAPTV
+    label: Override static PTV
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+    hint: Skip static (TM-based) pre-transmission checks for this element.
+  - name: CSS_CEV
+    label: Disable CEV
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "Y"
+        label: "Yes"
+      - value: "N"
+        label: "No"
+    hint: Disable command execution verification for this element.

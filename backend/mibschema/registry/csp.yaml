@@ -1,0 +1,150 @@
+table: csp
+file: csp.dat
+title: Sequence formal parameters
+icd: 3.3.3.3.4
+row_label: "{CSP_SQNAME}: {CSP_FPNAME}"
+description: >
+  Formal parameters of a sequence: values the operator provides once when
+  loading the sequence, distributed to the elements that reference them
+  (sdf value source = F). Like function arguments for sequences.
+columns:
+  - name: CSP_SQNAME
+    label: Sequence
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: csf.CSF_NAME
+    hint: The sequence this formal parameter belongs to.
+  - name: CSP_FPNAME
+    label: Formal parameter name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique name within the sequence.
+  - name: CSP_FPNUM
+    label: Number
+    type: number
+    length: 5
+    mandatory: true
+    hint: Unique ordering number of the formal parameter within the sequence.
+  - name: CSP_DESCR
+    label: Description
+    type: char
+    length: 24
+  - name: CSP_PTC
+    label: Parameter type (PTC)
+    type: number
+    length: 2
+    mandatory: true
+    hint: Type of the value (same PTC system as command parameters).
+  - name: CSP_PFC
+    label: Parameter format (PFC)
+    type: number
+    length: 5
+    mandatory: true
+    hint: Size/encoding variant of the PTC.
+  - name: CSP_DISPFMT
+    label: Input/display format
+    type: char
+    length: 1
+    default: "U"
+    enum:
+      - value: "A"
+        label: ASCII
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+      - value: "T"
+        label: Absolute time
+      - value: "D"
+        label: Relative time
+    hint: Format in which operators enter the value.
+  - name: CSP_RADIX
+    label: Raw radix
+    type: char
+    length: 1
+    default: "D"
+    enum:
+      - value: "D"
+        label: Decimal
+      - value: "H"
+        label: Hexadecimal
+      - value: "O"
+        label: Octal
+    hint: Default radix for raw values.
+  - name: CSP_TYPE
+    label: Formal parameter kind
+    type: char
+    length: 1
+    mandatory: true
+    default: "P"
+    enum:
+      - value: "P"
+        label: Element parameter value
+        help: Provides values to command/sequence parameters (the normal case).
+      - value: "C"
+        label: Command name (future)
+      - value: "S"
+        label: Sequence name (future)
+    hint: Leave at P - the other kinds are future extensions.
+  - name: CSP_VTYPE
+    label: Default representation
+    type: char
+    length: 1
+    enum:
+      - value: "R"
+        label: Raw
+      - value: "E"
+        label: Engineering
+    hint: Whether the default value below is raw or engineering. Required if a default is given.
+  - name: CSP_DEFVAL
+    label: Default value
+    type: char
+    length: 17
+    hint: Optional default offered to the operator at load time.
+  - name: CSP_CATEG
+    label: Calibration category
+    type: char
+    length: 1
+    default: "N"
+    enum:
+      - value: "N"
+        label: None
+      - value: "C"
+        label: Numeric de-calibration
+      - value: "T"
+        label: Textual (alias set)
+      - value: "B"
+        label: Both (future)
+      - value: "A"
+        label: Command ID
+      - value: "P"
+        label: Parameter ID
+    hint: Conversion applied to operator input (like CPC_CATEG).
+  - name: CSP_PRFREF
+    label: Range set
+    type: char
+    length: 10
+    fk: prf.PRF_NUMBR
+    hint: Optional range restriction (prf).
+  - name: CSP_CCAREF
+    label: Numeric calibration
+    type: char
+    length: 10
+    fk: cca.CCA_NUMBR
+    hint: Required when category is C.
+  - name: CSP_PAFREF
+    label: Alias set
+    type: char
+    length: 10
+    fk: paf.PAF_NUMBR
+    hint: Required when category is T.
+  - name: CSP_UNIT
+    label: Engineering unit
+    type: char
+    length: 4

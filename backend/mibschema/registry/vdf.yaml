@@ -1,0 +1,46 @@
+table: vdf
+file: vdf.dat
+title: Database version
+icd: 3.3.1.1
+row_label: "{VDF_NAME}"
+description: >
+  Identifies this MIB database version. Exactly one record should exist; it is
+  shown by the control system so operators know which database issue is loaded.
+columns:
+  - name: VDF_NAME
+    label: Version name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Short name of this database version, e.g. "MYSAT1".
+    help: >
+      Free alphanumeric string identifying the database version. Pick something
+      stable for your project (e.g. the unit acronym); use Release/Issue below
+      to track revisions.
+  - name: VDF_COMMENT
+    label: Comment
+    type: char
+    length: 32
+    hint: Free comment shown together with the version.
+  - name: VDF_DOMAINID
+    label: Domain ID
+    type: number
+    length: 5
+    hint: Optional numeric domain identifier (leave empty unless your mission assigns one).
+    help: >
+      Used by multi-domain SCOS-2000 installations to distinguish databases.
+      Your system/ground segment team will tell you if a specific value is
+      required; otherwise leave it empty.
+  - name: VDF_RELEASE
+    label: Release number
+    type: number
+    length: 5
+    default: "0"
+    hint: Database release counter (increment on formal deliveries).
+  - name: VDF_ISSUE
+    label: Issue number
+    type: number
+    length: 5
+    default: "0"
+    hint: Database issue counter within a release.

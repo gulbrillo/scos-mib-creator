@@ -1,0 +1,86 @@
+table: caf
+file: caf.dat
+title: Numerical calibrations
+icd: 3.3.2.2.2
+row_label: "{CAF_NUMBR}"
+description: >
+  Point-pair calibration curves: raw values are converted to engineering values
+  by linear interpolation between the points defined in cap. Use for sensor
+  characteristics measured at discrete points (e.g. thermistor tables).
+columns:
+  - name: CAF_NUMBR
+    label: Calibration name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique identifier of this curve, referenced from PCF_CURTX.
+  - name: CAF_DESCR
+    label: Description
+    type: char
+    length: 32
+    hint: What this curve converts, e.g. "PT1000 temp sensor".
+  - name: CAF_ENGFMT
+    label: Engineering format
+    type: char
+    length: 1
+    mandatory: true
+    default: "R"
+    enum:
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+    hint: Format of the engineering (output) values in cap.
+  - name: CAF_RAWFMT
+    label: Raw format
+    type: char
+    length: 1
+    mandatory: true
+    default: "U"
+    enum:
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+    hint: Format of the raw (input) values in cap. Must match the parameter's PTC.
+  - name: CAF_RADIX
+    label: Raw radix
+    type: char
+    length: 1
+    default: "D"
+    enum:
+      - value: "D"
+        label: Decimal
+      - value: "H"
+        label: Hexadecimal
+      - value: "O"
+        label: Octal
+    hint: Radix in which raw point values (CAP_XVALS) are written. Only for unsigned raw format.
+  - name: CAF_UNIT
+    label: Engineering unit
+    type: char
+    length: 4
+    hint: Unit of the engineering values (for consistency checking only).
+  - name: CAF_NCURVE
+    label: Number of points
+    type: number
+    length: 3
+    hint: Number of cap points for this curve. The editor keeps this in sync automatically.
+  - name: CAF_INTER
+    label: Out-of-range behaviour
+    type: char
+    length: 1
+    default: "F"
+    enum:
+      - value: "P"
+        label: Extrapolate
+        help: Raw values outside the curve are extrapolated from the outermost segments.
+      - value: "F"
+        label: Flag invalid
+        help: Raw values outside the curve mark the parameter invalid (recommended).
+    hint: What happens for raw values outside the defined points.

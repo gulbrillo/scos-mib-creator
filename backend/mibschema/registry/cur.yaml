@@ -1,0 +1,44 @@
+table: cur
+file: cur.dat
+title: Conditional calibration selection
+icd: 3.3.2.2.1
+row_label: "{CUR_PNAME} #{CUR_POS}"
+description: >
+  Advanced: lets one parameter use different calibrations depending on the
+  value of another parameter (e.g. a different curve per gain setting). For a
+  single fixed calibration simply set PCF_CURTX on the parameter instead.
+columns:
+  - name: CUR_PNAME
+    label: Parameter
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: The parameter whose calibration is selected conditionally.
+  - name: CUR_POS
+    label: Position
+    type: number
+    length: 2
+    key: true
+    mandatory: true
+    hint: Evaluation order (1, 2, ...) - the first matching condition wins.
+  - name: CUR_RLCHK
+    label: Condition parameter
+    type: char
+    length: 8
+    mandatory: true
+    fk: pcf.PCF_NAME
+    hint: Parameter whose value decides which calibration applies.
+  - name: CUR_VALPAR
+    label: Condition value
+    type: number
+    length: 5
+    mandatory: true
+    hint: Raw value of the condition parameter for which this calibration is selected.
+  - name: CUR_SELECT
+    label: Calibration to use
+    type: char
+    length: 10
+    mandatory: true
+    hint: Name of the calibration (caf/mcf/lgf/txf) applied when the condition matches.

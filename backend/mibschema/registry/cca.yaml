@@ -1,0 +1,71 @@
+table: cca
+file: cca.dat
+title: TC numeric de-calibrations
+icd: 3.3.3.6.1
+row_label: "{CCA_NUMBR}"
+description: >
+  De-calibration curves for command parameters: operators enter an engineering
+  value (e.g. a heater setpoint in degC), the ground converts it to the raw
+  on-board value by interpolating the points in ccs. Referenced from
+  CPC_CCAREF (category C parameters).
+columns:
+  - name: CCA_NUMBR
+    label: Curve name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    hint: Unique identifier, referenced from CPC_CCAREF.
+  - name: CCA_DESCR
+    label: Description
+    type: char
+    length: 24
+  - name: CCA_ENGFMT
+    label: Engineering format
+    type: char
+    length: 1
+    default: "R"
+    enum:
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+    hint: Format of the engineering (input) values in ccs.
+  - name: CCA_RAWFMT
+    label: Raw format
+    type: char
+    length: 1
+    default: "U"
+    enum:
+      - value: "I"
+        label: Signed integer
+      - value: "U"
+        label: Unsigned integer
+      - value: "R"
+        label: Real
+    hint: Format of the raw (output) values in ccs. Must match the parameter's PTC.
+  - name: CCA_RADIX
+    label: Raw radix
+    type: char
+    length: 1
+    default: "D"
+    enum:
+      - value: "D"
+        label: Decimal
+      - value: "H"
+        label: Hexadecimal
+      - value: "O"
+        label: Octal
+    hint: Radix of raw values (CCS_YVALS) for unsigned raw format.
+  - name: CCA_UNIT
+    label: Engineering unit
+    type: char
+    length: 4
+    hint: Unit of the engineering values (consistency checking only).
+  - name: CCA_NCURVE
+    label: Number of points
+    type: number
+    length: 3
+    hint: Number of ccs points for this curve. Kept in sync automatically.

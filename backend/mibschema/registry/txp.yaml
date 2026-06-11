@@ -1,0 +1,36 @@
+table: txp
+file: txp.dat
+title: Textual calibration entries
+icd: 3.3.2.2.5
+row_label: "{TXP_NUMBR}: {TXP_FROM}-{TXP_TO} = {TXP_ALTXT}"
+description: >
+  The raw-value ranges and state texts of the textual calibrations (txf). For a
+  single discrete value, set "From" and "To" to the same number.
+columns:
+  - name: TXP_NUMBR
+    label: Calibration name
+    type: char
+    length: 10
+    key: true
+    mandatory: true
+    fk: txf.TXF_NUMBR
+    hint: The txf calibration this entry belongs to.
+  - name: TXP_FROM
+    label: Raw value from
+    type: char
+    length: 14
+    key: true
+    mandatory: true
+    hint: Lower raw value of the range (inclusive), decimal.
+  - name: TXP_TO
+    label: Raw value to
+    type: char
+    length: 14
+    mandatory: true
+    hint: Upper raw value of the range (inclusive). Same as "from" for a single value.
+  - name: TXP_ALTXT
+    label: State text
+    type: char
+    length: 14
+    mandatory: true
+    hint: Text shown for raw values in this range, e.g. "ON".

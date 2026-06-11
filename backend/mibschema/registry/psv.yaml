@@ -1,0 +1,28 @@
+table: psv
+file: psv.dat
+title: Parameter value sets
+icd: 3.3.3.5.2
+row_label: "{PSV_PVSID}"
+description: >
+  Advanced/optional: named collections of values (one of possibly several per
+  parameter set) that can be selected as defaults for commands/sequences
+  (CCF_DEFSET / CSF_DEFSET). The individual values live in pvs.
+columns:
+  - name: PSV_NAME
+    label: Parameter set
+    type: char
+    length: 8
+    mandatory: true
+    fk: pst.PST_NAME
+    hint: The parameter set (pst) this value set instantiates.
+  - name: PSV_PVSID
+    label: Value set name
+    type: char
+    length: 8
+    key: true
+    mandatory: true
+    hint: Unique name of this value set.
+  - name: PSV_DESCR
+    label: Description
+    type: char
+    length: 24

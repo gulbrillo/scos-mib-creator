@@ -1,0 +1,35 @@
+table: grp
+file: grp.dat
+title: Groups
+icd: 3.3.2.6.1
+row_label: "{GRP_NAME}"
+description: >
+  Optional named groups of parameters or packets, used by ground tools for
+  retrieval and filtering. Members are listed in grpa (parameters) or grpk
+  (packets).
+columns:
+  - name: GRP_NAME
+    label: Group name
+    type: char
+    length: 14
+    key: true
+    mandatory: true
+    hint: Unique name of the group.
+  - name: GRP_DESCR
+    label: Description
+    type: char
+    length: 24
+    mandatory: true
+    hint: Short description of what this group collects.
+  - name: GRP_GTYPE
+    label: Group type
+    type: char
+    length: 2
+    mandatory: true
+    default: "PA"
+    enum:
+      - value: "PA"
+        label: Parameter group
+      - value: "PK"
+        label: Packet group
+    hint: Whether the group contains parameters (grpa) or packets (grpk).
