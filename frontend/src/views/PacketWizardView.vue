@@ -59,6 +59,12 @@ function addParam(pi1 = false) {
 function setPi1(idx: number) {
   params.value.forEach((p, i) => (p.is_pi1 = i === idx))
 }
+function move(i: number, delta: number) {
+  const j = i + delta
+  if (j < 0 || j >= params.value.length) return
+  const arr = params.value
+  ;[arr[i], arr[j]] = [arr[j], arr[i]]
+}
 
 // live byte map
 const bitWidthOf = (p: ParamRow): number => {
@@ -132,7 +138,9 @@ async function submit() {
                   option-value="value" filter fluid @change="applyService" />
         </div>
         <div class="field-row">
-          <label>Type / subtype (editable)</label>
+          <label v-tooltip.top="'The service type and subtype written into the PUS header of the packet. Pre-filled by the service selection on the left — only edit for mission-custom services.'">
+            Type / subtype (editable)
+          </label>
           <div style="display: flex; gap: 0.5rem">
             <InputNumber v-model="type" :min="0" :max="255" show-buttons style="width: 50%" />
             <InputNumber v-model="stype" :min="0" :max="255" show-buttons style="width: 50%" />
@@ -175,11 +183,17 @@ async function submit() {
         <div class="field-row" style="justify-content: end; gap: 0.8rem">
           <div style="display: flex; align-items: center; gap: 0.4rem">
             <Checkbox v-model="hasTime" binary input-id="ht" />
-            <label for="ht" style="font-weight: 400">Header contains time stamp</label>
+            <label for="ht" style="font-weight: 400"
+                   v-tooltip.top="'Whether the data field header carries the packet generation time stamp (PID_TIME). Standard PUS housekeeping packets do.'">
+              Header contains time stamp
+            </label>
           </div>
           <div style="display: flex; align-items: center; gap: 0.4rem">
             <Checkbox v-model="hasPec" binary input-id="hp" />
-            <label for="hp" style="font-weight: 400">Packet ends with CRC (PEC, 2 bytes)</label>
+            <label for="hp" style="font-weight: 400"
+                   v-tooltip.top="'Whether the last 2 bytes of the packet are a CRC checksum (Packet Error Control). Standard for PUS packets — only affects the computed total size (tpcf).'">
+              Packet ends with CRC (PEC, 2 bytes)
+            </label>
           </div>
         </div>
         <div class="field-row">
@@ -202,15 +216,31 @@ async function submit() {
       <table class="param-table" v-if="params.length">
         <thead>
           <tr>
-            <th style="width: 9rem">Name *</th><th>Description</th>
-            <th style="width: 5rem">PTC</th><th style="width: 5rem">PFC</th>
-            <th style="width: 9rem"></th><th style="width: 5rem">Unit</th>
-            <th style="width: 5rem" v-tooltip.top="'This field carries the SID / identification value'">ID field</th>
+            <th style="width: 5.5rem"
+                v-tooltip.top="'Order = position in the packet body. Use the arrows to reorder; all offsets update live in the map below.'">Order</th>
+            <th style="width: 9rem"
+                v-tooltip.top="'Unique parameter mnemonic, max 8 characters (PCF_NAME). A new name is created as a TM parameter automatically; an existing name reuses its stored type.'">Name *</th>
+            <th v-tooltip.top="'Free text shown to operators in displays, max 24 characters (PCF_DESCR).'">Description</th>
+            <th style="width: 5rem"
+                v-tooltip.top="'Parameter Type Code — the kind of value: 1 boolean, 2 enumerated state, 3 unsigned int, 4 signed int, 5 real, 8 text, 9 time. Use the type picker if unsure.'">PTC</th>
+            <th style="width: 5rem"
+                v-tooltip.top="'Parameter Format Code — the size variant of the PTC. For integers: PFC 4 = 8 bit, 12 = 16 bit, 14 = 32 bit. Together PTC and PFC fix how many bits the field occupies.'">PFC</th>
+            <th style="width: 9rem"></th>
+            <th style="width: 5rem"
+                v-tooltip.top="'Engineering unit shown next to calibrated values, max 4 characters, e.g. V, degC, mA. Leave empty for counters and states.'">Unit</th>
+            <th style="width: 5rem"
+                v-tooltip.top="'Mark the field that carries the identification value (the SID for housekeeping packets). Its position is written into the pic table so the ground can tell packets apart.'">ID field</th>
             <th style="width: 3rem"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(p, i) in params" :key="i">
+            <td class="reorder">
+              <Button text size="small" icon="pi pi-arrow-up" :disabled="i === 0"
+                      v-tooltip.top="'Move up (earlier in the packet)'" @click="move(i, -1)" />
+              <Button text size="small" icon="pi pi-arrow-down" :disabled="i === params.length - 1"
+                      v-tooltip.top="'Move down (later in the packet)'" @click="move(i, 1)" />
+            </td>
             <td><InputText v-model="p.name" maxlength="8" size="small" fluid /></td>
             <td><InputText v-model="p.descr" maxlength="24" size="small" fluid /></td>
             <td><InputNumber v-model="p.ptc" :min="1" :max="13" size="small" fluid /></td>
@@ -219,9 +249,11 @@ async function submit() {
                               @select="(v) => { p.ptc = v.ptc; p.pfc = v.pfc }" /></td>
             <td><InputText v-model="p.unit" maxlength="4" size="small" fluid /></td>
             <td style="text-align: center">
-              <input type="radio" name="pi1" :checked="p.is_pi1" @change="setPi1(i)" />
+              <input type="radio" name="pi1" :checked="p.is_pi1" @change="setPi1(i)"
+                     v-tooltip.top="'This field carries the SID / identification value'" />
             </td>
             <td><Button text size="small" icon="pi pi-trash" severity="danger"
+                        v-tooltip.top="'Remove from packet (does not delete the parameter)'"
                         @click="params.splice(i, 1)" /></td>
           </tr>
         </tbody>
@@ -259,6 +291,8 @@ async function submit() {
 
 <style scoped>
 .param-table { width: 100%; border-collapse: collapse; }
-.param-table th { text-align: left; font-size: 0.8rem; color: var(--p-text-muted-color); padding: 0.25rem; }
+.param-table th { text-align: left; font-size: 0.8rem; color: var(--p-text-muted-color); padding: 0.25rem; cursor: help; }
 .param-table td { padding: 0.2rem 0.25rem; }
+.param-table td.reorder { white-space: nowrap; }
+.param-table td.reorder .p-button { padding: 0.15rem; width: 1.6rem; }
 </style>

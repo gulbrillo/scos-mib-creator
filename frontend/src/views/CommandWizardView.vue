@@ -61,6 +61,12 @@ function addParam() {
   params.value.push({ pname: '', descr: '', ptc: 3, pfc: 12, kind: 'editable',
                       bits: null, value: '', unit: '', defval: '' })
 }
+function move(i: number, delta: number) {
+  const j = i + delta
+  if (j < 0 || j >= params.value.length) return
+  const arr = params.value
+  ;[arr[i], arr[j]] = [arr[j], arr[i]]
+}
 
 const bitWidthOf = (p: ParamRow): number => {
   if (p.kind === 'area') return p.bits ?? 0
@@ -144,14 +150,18 @@ async function submit() {
                   option-value="value" filter fluid @change="applyService" />
         </div>
         <div class="field-row">
-          <label>Type / subtype (editable)</label>
+          <label v-tooltip.top="'The service type and subtype written into the PUS header of the command packet. Pre-filled by the service selection — only edit for mission-custom services.'">
+            Type / subtype (editable)
+          </label>
           <div style="display: flex; gap: 0.5rem">
             <InputNumber v-model="type" :min="0" :max="255" show-buttons style="width: 50%" />
             <InputNumber v-model="stype" :min="0" :max="255" show-buttons style="width: 50%" />
           </div>
         </div>
         <div class="field-row">
-          <label>APID <span class="req">*</span></label>
+          <label v-tooltip.top="'APID of the on-board application that executes this command — usually the same APID your unit uses for telemetry.'">
+            APID <span class="req">*</span>
+          </label>
           <InputNumber v-model="apid" :min="0" :max="2047" fluid />
         </div>
         <div class="field-row" style="flex-direction: row; align-items: center; margin-top: 1.4rem">
@@ -174,16 +184,30 @@ async function submit() {
       <table class="param-table" v-if="params.length">
         <thead>
           <tr>
-            <th style="width: 8rem">Name</th><th>Description</th>
-            <th style="width: 13rem">Kind</th>
-            <th style="width: 4.5rem">PTC</th><th style="width: 4.5rem">PFC</th>
+            <th style="width: 5.5rem"
+                v-tooltip.top="'Order = position in the application data. Use the arrows to reorder; bit offsets update live in the map below.'">Order</th>
+            <th style="width: 8rem"
+                v-tooltip.top="'Argument mnemonic, max 8 characters (CPC_PNAME). New names are created as command parameters automatically; existing names are reused. Fixed areas need no name.'">Name</th>
+            <th v-tooltip.top="'Free text shown to operators when preparing the command, max 24 characters.'">Description</th>
+            <th style="width: 13rem"
+                v-tooltip.top="'Editable: the operator enters the value. Fixed: a locked parameter value (visible but unchangeable). Fixed area: constant bits baked into the packet, invisible to operators — typical for function IDs.'">Kind</th>
+            <th style="width: 4.5rem"
+                v-tooltip.top="'Parameter Type Code — the kind of value: 2 enumerated state, 3 unsigned int, 4 signed int, 5 real, 8 text, 9 absolute time. Use the type picker if unsure.'">PTC</th>
+            <th style="width: 4.5rem"
+                v-tooltip.top="'Parameter Format Code — the size variant of the PTC. For integers: PFC 4 = 8 bit, 12 = 16 bit, 14 = 32 bit.'">PFC</th>
             <th style="width: 8.5rem"></th>
-            <th style="width: 7rem" v-tooltip.top="'Raw value for fixed parameters/areas, or default for editable ones'">Value</th>
+            <th style="width: 7rem" v-tooltip.top="'Raw value for fixed parameters and areas, or the default offered to operators for editable ones. Leave empty to force the operator to enter a value.'">Value</th>
             <th style="width: 3rem"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(p, i) in params" :key="i">
+            <td class="reorder">
+              <Button text size="small" icon="pi pi-arrow-up" :disabled="i === 0"
+                      v-tooltip.top="'Move up (earlier in the packet)'" @click="move(i, -1)" />
+              <Button text size="small" icon="pi pi-arrow-down" :disabled="i === params.length - 1"
+                      v-tooltip.top="'Move down (later in the packet)'" @click="move(i, 1)" />
+            </td>
             <td><InputText v-model="p.pname" maxlength="8" size="small" :disabled="p.kind === 'area'" fluid /></td>
             <td><InputText v-model="p.descr" maxlength="24" size="small" fluid /></td>
             <td><Select v-model="p.kind" :options="kindOptions" option-label="label" option-value="value" size="small" fluid /></td>
@@ -197,7 +221,9 @@ async function submit() {
               <InputNumber v-model="p.bits" :min="1" :max="4096" size="small" placeholder="bits" fluid />
             </td>
             <td><InputText v-model="p.value" size="small" fluid /></td>
-            <td><Button text size="small" icon="pi pi-trash" severity="danger" @click="params.splice(i, 1)" /></td>
+            <td><Button text size="small" icon="pi pi-trash" severity="danger"
+                        v-tooltip.top="'Remove this argument from the command'"
+                        @click="params.splice(i, 1)" /></td>
           </tr>
         </tbody>
       </table>
@@ -226,15 +252,24 @@ async function submit() {
       <div class="toolbar" style="margin: 0">
         <div style="display: flex; align-items: center; gap: 0.4rem">
           <Checkbox v-model="verifAcceptance" binary input-id="va" />
-          <label for="va" style="font-weight: 400">Acceptance (1,1 / 1,2)</label>
+          <label for="va" style="font-weight: 400"
+                 v-tooltip.top="'Wait for the report confirming the on-board software accepted the command. Cheap and recommended for every command.'">
+            Acceptance (1,1 / 1,2)
+          </label>
         </div>
         <div style="display: flex; align-items: center; gap: 0.4rem">
           <Checkbox v-model="verifStart" binary input-id="vs" />
-          <label for="vs" style="font-weight: 400">Start of execution (1,3 / 1,4)</label>
+          <label for="vs" style="font-weight: 400"
+                 v-tooltip.top="'Wait for the report that execution started. Only useful for long-running activities that report start separately.'">
+            Start of execution (1,3 / 1,4)
+          </label>
         </div>
         <div style="display: flex; align-items: center; gap: 0.4rem">
           <Checkbox v-model="verifCompletion" binary input-id="vc" />
-          <label for="vc" style="font-weight: 400">Completion (1,7 / 1,8)</label>
+          <label for="vc" style="font-weight: 400"
+                 v-tooltip.top="'Wait for the report that execution finished successfully. Recommended whenever the on-board software supports it.'">
+            Completion (1,7 / 1,8)
+          </label>
         </div>
       </div>
     </div>
@@ -248,6 +283,8 @@ async function submit() {
 
 <style scoped>
 .param-table { width: 100%; border-collapse: collapse; }
-.param-table th { text-align: left; font-size: 0.8rem; color: var(--p-text-muted-color); padding: 0.25rem; }
+.param-table th { text-align: left; font-size: 0.8rem; color: var(--p-text-muted-color); padding: 0.25rem; cursor: help; }
 .param-table td { padding: 0.2rem 0.25rem; }
+.param-table td.reorder { white-space: nowrap; }
+.param-table td.reorder .p-button { padding: 0.15rem; width: 1.6rem; }
 </style>
