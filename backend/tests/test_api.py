@@ -124,6 +124,18 @@ def test_full_project_lifecycle(client):
                    json={"data": target["data"], "version": target["version"]})
     assert r.status_code == 409  # stale version rejected
 
+    # --- count columns auto-sync on manual child-table edits ----------------
+    def ncurve():
+        caf = client.get(f"/api/projects/{pid}/tables/caf/rows").json()
+        return next(r for r in caf if r["data"]["CAF_NUMBR"] == "UTVCAL")["data"]["CAF_NCURVE"]
+    assert ncurve() == "2"
+    r = client.post(f"/api/projects/{pid}/tables/cap/rows", json={"data": {
+        "CAP_NUMBR": "UTVCAL", "CAP_XVALS": "32768", "CAP_YVALS": "16.0"}})
+    assert r.status_code == 201
+    assert ncurve() == "3"          # adding a point bumped CAF_NCURVE
+    client.delete(f"/api/projects/{pid}/tables/cap/rows/{r.json()['id']}")
+    assert ncurve() == "2"          # deleting restored it
+
     # --- export -> import into fresh project -> export: identical -----------
     exp1 = client.get(f"/api/projects/{pid}/export")
     assert exp1.status_code == 200

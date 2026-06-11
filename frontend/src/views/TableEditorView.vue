@@ -14,6 +14,7 @@ import { del, get, post, put } from '../api'
 import FieldInput from '../components/FieldInput.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
 import PusServicePicker from '../components/PusServicePicker.vue'
+import { pfcHint, ptcHint, pusSubtypeHint, pusTypeHint, type ValueHint } from '../help/valueHints'
 import { useSchema } from '../stores/schema'
 import type { ColumnDef, MibRow, MibRowData } from '../types'
 
@@ -167,6 +168,21 @@ function applyPus(p: PickerInfo, v: { type: number; stype: number }) {
   draft.value[p.typeCol] = String(v.type)
   draft.value[p.secondCol] = String(v.stype)
 }
+
+// live gray interpretation of coded values, shown inside the input
+function valueHintFor(colName: string): ValueHint | null {
+  const p = pickerFor(colName)
+  if (!p) return null
+  const v = (c: string) => String(draft.value[c] ?? '')
+  if (p.kind === 'ptc') {
+    return colName.endsWith('_PTC')
+      ? ptcHint(store.ptcCatalog, v(colName))
+      : pfcHint(store.ptcCatalog, v(p.typeCol), v(colName))
+  }
+  return colName === p.typeCol
+    ? pusTypeHint(store.pusServices, v(colName))
+    : pusSubtypeHint(store.pusServices, p.side, v(p.typeCol), v(colName))
+}
 </script>
 
 <template>
@@ -229,6 +245,7 @@ function applyPus(p: PickerInfo, v: { type: number; stype: number }) {
           :column="c"
           :fk-rows="c.fk ? fkRows[c.fk.split('.')[0]] : undefined"
           :fk-label-col="c.fk ? fkLabelCol(c) : undefined"
+          :value-hint="valueHintFor(c.name)"
           @help="showHelp(c)"
         >
           <template v-if="pickerFor(c.name)" #append>

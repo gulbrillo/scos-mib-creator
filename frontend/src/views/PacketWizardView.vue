@@ -11,6 +11,7 @@ import { post } from '../api'
 import HelpPanel from '../components/HelpPanel.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
 import PusServicePicker from '../components/PusServicePicker.vue'
+import { pusPairHint, typePairHint } from '../help/valueHints'
 import { packetHelp, type HelpTopic } from '../help/wizardHelp'
 import { useSchema } from '../stores/schema'
 
@@ -46,6 +47,15 @@ function help(key: string) {
 }
 
 const isHk = computed(() => type.value === 3)
+
+const serviceHint = computed(() =>
+  pusPairHint(store.pusServices, 'tm',
+              type.value == null ? '' : String(type.value),
+              stype.value == null ? '' : String(stype.value)))
+const rowTypeHint = (p: ParamRow) =>
+  typePairHint(store.ptcCatalog,
+               p.ptc == null ? '' : String(p.ptc),
+               p.pfc == null ? '' : String(p.pfc))
 
 function addParam(pi1 = false) {
   params.value.push({
@@ -135,6 +145,9 @@ async function submit() {
             <InputNumber v-model="stype" :min="0" :max="255" show-buttons style="flex: 1" />
             <PusServicePicker side="tm" icon-only
                               @select="(v) => { type = v.type; stype = v.stype }" />
+          </div>
+          <div v-if="serviceHint" class="live-hint" :class="{ invalid: serviceHint.invalid }">
+            {{ serviceHint.text }}
           </div>
         </div>
         <div class="field-row">
@@ -245,6 +258,9 @@ async function submit() {
                 <PtcPfcPicker icon-only side="tm" :ptc="p.ptc" :pfc="p.pfc"
                               @select="(v) => { p.ptc = v.ptc; p.pfc = v.pfc }" />
               </div>
+              <div v-if="rowTypeHint(p)" class="live-hint" :class="{ invalid: rowTypeHint(p)!.invalid }">
+                {{ rowTypeHint(p)!.text }}
+              </div>
             </td>
             <td><InputText v-model="p.unit" maxlength="4" size="small" fluid /></td>
             <td style="text-align: center">
@@ -304,4 +320,14 @@ async function submit() {
 .param-table td.reorder .p-button { padding: 0.15rem; width: 1.6rem; }
 .pfc-cell { display: flex; align-items: center; gap: 2px; }
 .pfc-cell > :first-child { flex: 1; min-width: 0; }
+.live-hint {
+  font-size: 0.72rem;
+  color: var(--p-text-muted-color);
+  text-align: right;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.live-hint.invalid { color: var(--p-red-500); font-weight: 600; }
 </style>

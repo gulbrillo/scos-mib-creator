@@ -12,6 +12,7 @@ import { get, post } from '../api'
 import HelpPanel from '../components/HelpPanel.vue'
 import PtcPfcPicker from '../components/PtcPfcPicker.vue'
 import PusServicePicker from '../components/PusServicePicker.vue'
+import { pusPairHint, typePairHint } from '../help/valueHints'
 import { commandHelp, type HelpTopic } from '../help/wizardHelp'
 import { useSchema } from '../stores/schema'
 
@@ -71,6 +72,15 @@ const headerBits = computed(() =>
   headerFields.value.reduce((max, f) => Math.max(max, f.bit + f.len), 0))
 
 const fmtOffset = (bits: number) => `${Math.floor(bits / 8)}.${bits % 8}`
+
+const serviceHint = computed(() =>
+  pusPairHint(store.pusServices, 'tc',
+              type.value == null ? '' : String(type.value),
+              stype.value == null ? '' : String(stype.value)))
+const rowTypeHint = (p: ParamRow) =>
+  typePairHint(store.ptcCatalog,
+               p.ptc == null ? '' : String(p.ptc),
+               p.pfc == null ? '' : String(p.pfc))
 
 const kindOptions = [
   { value: 'editable', label: 'Editable — operator enters the value' },
@@ -177,6 +187,9 @@ async function submit() {
             <PusServicePicker side="tc" icon-only
                               @select="(v) => { type = v.type; stype = v.stype }" />
           </div>
+          <div v-if="serviceHint" class="live-hint" :class="{ invalid: serviceHint.invalid }">
+            {{ serviceHint.text }}
+          </div>
         </div>
         <div class="field-row">
           <label v-tooltip.top="'APID of the on-board application that executes this command — usually the same APID your unit uses for telemetry.'">
@@ -238,6 +251,9 @@ async function submit() {
                 <InputNumber v-model="p.pfc" :min="0" size="small" fluid />
                 <PtcPfcPicker icon-only side="tc" :ptc="p.ptc" :pfc="p.pfc"
                               @select="(v) => { p.ptc = v.ptc; p.pfc = v.pfc }" />
+              </div>
+              <div v-if="rowTypeHint(p)" class="live-hint" :class="{ invalid: rowTypeHint(p)!.invalid }">
+                {{ rowTypeHint(p)!.text }}
               </div>
             </td>
             <td v-else colspan="2">
@@ -332,4 +348,14 @@ async function submit() {
 .param-table td.reorder .p-button { padding: 0.15rem; width: 1.6rem; }
 .pfc-cell { display: flex; align-items: center; gap: 2px; }
 .pfc-cell > :first-child { flex: 1; min-width: 0; }
+.live-hint {
+  font-size: 0.72rem;
+  color: var(--p-text-muted-color);
+  text-align: right;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.live-hint.invalid { color: var(--p-red-500); font-weight: 600; }
 </style>

@@ -6,8 +6,8 @@ row_label: "{PLF_NAME} @ {PLF_SPID}+{PLF_OFFBY}.{PLF_OFFBI}"
 description: >
   Places monitoring parameters into fixed telemetry packets: "parameter X
   starts at byte B, bit b of packet SPID". Byte offsets are counted from the
-  very first byte of the packet (CCSDS header included). The packet layout
-  editor maintains this table visually.
+  very first byte of the packet (CCSDS header included). The TM packet wizard
+  fills this table for you, with a live byte map.
 columns:
   - name: PLF_NAME
     label: Parameter
@@ -34,7 +34,7 @@ columns:
     help: >
       Offset 0 is the first byte of the CCSDS primary header. The first byte
       after a 6-byte primary header and e.g. a 10-byte PUS secondary header is
-      offset 16. The visual layout editor computes this for you.
+      offset 16. The TM packet wizard computes these offsets for you.
   - name: PLF_OFFBI
     label: Bit offset
     type: number

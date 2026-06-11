@@ -2,6 +2,7 @@
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { computed } from 'vue'
+import type { ValueHint } from '../help/valueHints'
 import type { ColumnDef, MibRow } from '../types'
 
 const props = defineProps<{
@@ -9,6 +10,7 @@ const props = defineProps<{
   modelValue: string
   fkRows?: MibRow[]          // candidate rows of the referenced table
   fkLabelCol?: string        // optional description column to show alongside
+  valueHint?: ValueHint | null  // live interpretation shown inside the input
 }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: string): void; (e: 'help'): void }>()
 
@@ -84,14 +86,17 @@ const fkOptions = computed(() => {
         :placeholder="`Select from ${column.fk?.split('.')[0]}…`"
         fluid
       />
-      <InputText
-        v-else
-        v-model="value"
-        size="small"
-        :placeholder="column.hint"
-        :maxlength="column.length ?? undefined"
-        fluid
-      />
+      <div v-else class="input-host">
+        <InputText
+          v-model="value"
+          size="small"
+          :placeholder="column.hint"
+          :maxlength="column.length ?? undefined"
+          fluid
+        />
+        <span v-if="valueHint && value !== ''" class="value-hint"
+              :class="{ invalid: valueHint.invalid }">{{ valueHint.text }}</span>
+      </div>
       <slot name="append" />
     </div>
   </div>
@@ -106,4 +111,19 @@ const fkOptions = computed(() => {
 label .mono { margin-left: auto; font-weight: 400; }
 .input-line { display: flex; align-items: center; gap: 0.15rem; }
 .input-line > :first-child { flex: 1; min-width: 0; }
+.input-host { position: relative; }
+.value-hint {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.value-hint.invalid { color: var(--p-red-500); font-weight: 600; }
 </style>

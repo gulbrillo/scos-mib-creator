@@ -11,6 +11,41 @@ from mibschema.parser import EXTRA_KEY
 
 router = APIRouter(prefix="/api/projects/{project_id}/tables", tags=["rows"])
 
+# Count columns that the MIB declares redundantly (e.g. CAF_NCURVE = number of
+# cap points). The registry hints promise these are "kept in sync
+# automatically", so any manual edit of a child table re-derives the parent
+# counts here. child -> (parent, parent key col, child ref col, count col)
+COUNT_SYNC: dict[str, tuple[str, str, str, str]] = {
+    "cap": ("caf", "CAF_NUMBR", "CAP_NUMBR", "CAF_NCURVE"),
+    "txp": ("txf", "TXF_NUMBR", "TXP_NUMBR", "TXF_NALIAS"),
+    "ccs": ("cca", "CCA_NUMBR", "CCS_NUMBR", "CCA_NCURVE"),
+    "pas": ("paf", "PAF_NUMBR", "PAS_NUMBR", "PAF_NALIAS"),
+    "prv": ("prf", "PRF_NUMBR", "PRV_NUMBR", "PRF_NRANGE"),
+    "cdf": ("ccf", "CCF_CNAME", "CDF_CNAME", "CCF_NPARS"),
+    "ocp": ("ocf", "OCF_NAME", "OCP_NAME", "OCF_NBOOL"),
+    "css": ("csf", "CSF_NAME", "CSS_SQNAME", "CSF_ELEMS"),
+    "csp": ("csf", "CSF_NAME", "CSP_SQNAME", "CSF_NFPARS"),
+}
+
+
+def _sync_counts(db: Session, project_id: int, child_table: str):
+    if child_table not in COUNT_SYNC:
+        return
+    parent, pkey, cref, count_col = COUNT_SYNC[child_table]
+    counts: dict[str, int] = {}
+    for r in mibstore.table_rows(db, project_id, child_table):
+        key = str(r.data.get(cref, "") or "")
+        if key:
+            counts[key] = counts.get(key, 0) + 1
+    for row in mibstore.table_rows(db, project_id, parent):
+        actual = counts.get(str(row.data.get(pkey, "") or ""), 0)
+        current = str(row.data.get(count_col, "") or "")
+        # leave an optional count empty while there are no children
+        new = str(actual) if (actual > 0 or current != "") else ""
+        if new != current:
+            row.data = {**row.data, count_col: new}
+            row.version += 1
+
 
 class RowIn(BaseModel):
     data: dict
@@ -57,6 +92,8 @@ def create_row(project_id: int, table: str, req: RowIn, db: Session = Depends(ge
     get_project_for(db, project_id, user, write=True)
     tdef = _table_def(table)
     row = mibstore.insert_rows(db, project_id, table, [_clean_data(tdef, req.data)])[0]
+    db.flush()
+    _sync_counts(db, project_id, table)
     db.commit()
     return row_json(row)
 
@@ -74,6 +111,8 @@ def update_row(project_id: int, table: str, row_id: int, req: RowUpdate,
                                  "Reload it and re-apply your change.")
     row.data = _clean_data(tdef, req.data)
     row.version += 1
+    db.flush()
+    _sync_counts(db, project_id, table)
     db.commit()
     return row_json(row)
 
@@ -87,5 +126,7 @@ def delete_row(project_id: int, table: str, row_id: int, db: Session = Depends(g
     if row is None or row.project_id != project_id or row.table_name != table:
         raise HTTPException(404, "Row not found")
     db.delete(row)
+    db.flush()
+    _sync_counts(db, project_id, table)
     db.commit()
     return {"ok": True}
